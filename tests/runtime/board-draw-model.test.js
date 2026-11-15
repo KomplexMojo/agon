@@ -100,3 +100,34 @@ test("a view that is not a play view is refused", async () => {
 
 // ## TODO: Test Permutations
 // - a defeated seat (view.player null) yields seatHud null
+
+test("#854: floor, spawn and exit cells carry a stable floorVariant; fog and walls carry none", async () => {
+  const { buildBoardDrawModel } = await import("../../packages/runtime/src/render/board-draw-model.js");
+  const { FLOOR_VARIANT_COUNT } = await import("../../packages/runtime/src/render/floor-variants.js");
+  const view = await played("first-steps");
+  const model = buildBoardDrawModel(view);
+  let seen = 0;
+  model.cells.forEach((row, y) => row.forEach((cell, x) => {
+    if (cell.tile === "floor" || cell.tile === "spawn" || cell.tile === "exit") {
+      assert.ok(Number.isInteger(cell.floorVariant) && cell.floorVariant >= 0 && cell.floorVariant < FLOOR_VARIANT_COUNT);
+      assert.equal(cell.floorVariant, view.floorVariants[y][x]);
+      seen += 1;
+    } else {
+      assert.equal(cell.floorVariant, undefined, `${cell.tile} at ${x},${y} must not carry a variant`);
+    }
+  }));
+  assert.ok(seen > 0);
+});
+
+test("#854: floorVariantAt is deterministic, seed-dependent and covers every variant", async () => {
+  const { FLOOR_VARIANT_COUNT, floorVariantAt } = await import("../../packages/runtime/src/render/floor-variants.js");
+  assert.equal(floorVariantAt(3, 4, 7), floorVariantAt(3, 4, 7));
+  const counts = new Array(FLOOR_VARIANT_COUNT).fill(0);
+  let differs = 0;
+  for (let y = 0; y < 40; y += 1) for (let x = 0; x < 40; x += 1) {
+    counts[floorVariantAt(x, y, 1)] += 1;
+    if (floorVariantAt(x, y, 1) !== floorVariantAt(x, y, 2)) differs += 1;
+  }
+  assert.ok(counts.every((n) => n > 100), `every variant used reasonably often: ${counts}`);
+  assert.ok(differs > 800, "a different seed reshuffles the floor");
+});
