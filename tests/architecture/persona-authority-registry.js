@@ -891,7 +891,7 @@ const REGISTRY = Object.freeze([
     persona: "annotator",
     behavior: "The end-of-run RunSummary is produced by the instance that observed the run",
     criteria: ["A2", "A5"],
-    productionEntryPoint: "packages/runtime/src/commands/kernel.js",
+    productionEntryPoint: "packages/runtime/src/commands/kernel/run.js",
     invocation: "none",
     // The runtime delegates to the Annotator it actually ran (`runtime.summarizeRun`),
     // and that method REFUSES to summarize a run that ticked if the instance is still

@@ -21,7 +21,7 @@ import { beginDirectorRound, directorBuildCapabilities } from "../../../../runti
 import { runLlmBudgetLoop } from "../../../../runtime/src/personas/orchestrator/persona.js";
 import { DEFAULT_LLM_BASE_URL, DEFAULT_LLM_MODEL, LLM_REPAIR_TEXT, appendLlmPromptSuffix, buildLlmActorConfigPromptTemplate, buildLlmCatalogRepairPromptTemplate, buildLlmConstraintSection, buildLlmRepairPromptTemplate } from "../../../../runtime/src/contracts/domain-constants.js";
 import { parseArgs } from "../../../../runtime/src/commands/authoring-specs.js";
-import { allowNetworkRequests, buildDryRunBudgetEstimate, buildDryRunFailure, buildDryRunSuccess, buildPoolWeightsForAuthoredKinds, commandKernel, configurator, defaultRunDir, deriveActorIds, deriveRoomIds, emitJsonStdout, isLlmBudgetLoopEnabled, isLlmLiveEnabled, isLlmStrictEnabled, isLocalBaseUrl, isNonEmptyString, makeId, readJson, readText, resolvePath, summarizeBuildLikeOutput, usage } from "./shared.mjs";
+import { allowNetworkRequests, buildDryRunBudgetEstimate, buildDryRunFailure, buildDryRunSuccess, buildPoolWeightsForAuthoredKinds, commandKernel, configurator, defaultRunDir, deriveActorIds, deriveRoomIds, emitJsonStdout, isLlmBudgetLoopEnabled, isLlmLiveEnabled, isLlmStrictEnabled, isLocalBaseUrl, isNonEmptyString, makeId, readJson, readText, resolveDefaultLlmFixturePath, resolvePath, summarizeBuildLikeOutput, usage } from "./shared.mjs";
 import { resolveFromRunArtifactPaths, summarizeInspectOutput, summarizeRunOutput, validateRunDryRun } from "./run-shared.mjs";
 
 // D8.3 — the Director refuses to derive level geometry from room cards; it asks the
@@ -60,19 +60,6 @@ function buildScenarioSummary({
     },
     ticks: inspectSummary?.ticks ?? runSummary?.ticks,
   };
-}
-
-function resolveDefaultLlmFixturePath({ resolvePath: resolveCliPath, exists, cwd }) {
-  const candidates = [
-    resolveCliPath("tests/fixtures/adapters/llm-generate-summary.json"),
-    resolveCliPath("tests/fixtures/adapters/llm-generate-summary.json", cwd()),
-  ].filter(Boolean);
-  for (const candidate of candidates) {
-    if (exists(candidate)) {
-      return candidate;
-    }
-  }
-  return null;
 }
 
 function unwrapCodeFence(text) {

@@ -681,6 +681,20 @@ function logMixedRoomAssembliesFromBuildResult(buildResult) {
   });
 }
 
+// #862: the default llm-plan fixture is a repository path, so the host names it; runtime holds no tests/ path.
+export function resolveDefaultLlmFixturePath({ resolvePath: resolveCliPath, exists, cwd }) {
+  const candidates = [
+    resolveCliPath("tests/fixtures/adapters/llm-generate-summary.json"),
+    resolveCliPath("tests/fixtures/adapters/llm-generate-summary.json", cwd()),
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    if (exists(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
 export const commandKernel = createCommandKernel({
   readJson,
   readText,
@@ -720,6 +734,7 @@ export const commandKernel = createCommandKernel({
   nowIso: () => new Date().toISOString(),
   env: process.env,
   cwd: () => process.cwd(),
+  defaultLlmFixturePath: () => resolveDefaultLlmFixturePath({ resolvePath, exists: existsSync, cwd: () => process.cwd() }),
   log: (...parts) => console.error(...parts),
   warn: (...parts) => console.error(...parts),
 });
