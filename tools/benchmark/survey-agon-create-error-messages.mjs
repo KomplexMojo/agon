@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SM0 of error-message-quality-sweep.md: mechanically lists every `throw new Error(...)` site
+// SM0 of docs/history/error-message-quality-sweep.md: mechanically lists every `throw new Error(...)` site
 // reachable from a single `agon_create` call and flags which have zero `${...}` interpolation --
 // the entry point for SM1's per-site "is there dropped detail" triage, not the answer to it.
 //
@@ -19,7 +19,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const OUT_DEFAULT = join(REPO_ROOT, "error-message-quality-sweep-worklist.json");
+const OUT_DEFAULT = join(REPO_ROOT, "docs", "history", "error-message-quality-sweep-worklist.json");
 
 // { file, functions: [...] } scans only those named functions (bracket-depth bounded from their
 // declaration). { file, wholeFile: true } scans the entire file -- used where every throw in the

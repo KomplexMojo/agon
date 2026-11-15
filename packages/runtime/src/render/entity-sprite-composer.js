@@ -9,7 +9,7 @@
  * out, and eight channels do not fit in 64 pixels -- the medallion was legible
  * at 64px, muddy at 32px and noise at 16px. See
  * the Primordial repository (`art/archive/2026-09-medallion-era/`, moved there in
- * #741) for the retired art and the measurement, and `interface-refinement.md`
+ * #741) for the retired art and the measurement, and `docs/history/interface-refinement.md`
  * for the plan.
  *
  * The budget here is deliberately **two channels**:

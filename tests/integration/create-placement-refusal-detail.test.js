@@ -1,4 +1,4 @@
-// M4 (coding-issues-affecting-benchmarking.md): assignPositionedLayoutObjects' refusal used to say
+// M4 (docs/history/coding-issues-affecting-benchmarking.md): assignPositionedLayoutObjects' refusal used to say
 // only "insufficient unoccupied walkable tiles" with no numbers. Every recorded benchmark failure
 // on this path turned out to be the model requesting a floorTile.count far below what its own
 // hazard/actor count needs -- the placer itself scales cleanly to hundreds of tiles across many

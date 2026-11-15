@@ -1,5 +1,5 @@
 /**
- * Executable form of the M2 palette decision (interface-refinement.md).
+ * Executable form of the M2 palette decision (docs/history/interface-refinement.md).
  *
  * The affinity palette is the ONLY channel carrying affinity on a board sprite --
  * the silhouette is spent on role. So "these ten colours are far enough apart" is

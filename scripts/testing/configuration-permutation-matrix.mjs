@@ -11,7 +11,7 @@
 // budget denial doesn't confound the sweep. That fixed cap is also the "don't let generated configs
 // grow unmanaged" rail this tool was built to satisfy.
 //
-// See mcp-harness-run-through.md ("Configuration-permutation sweep") for the sweep this matrix
+// See docs/history/mcp-harness-run-through.md ("Configuration-permutation sweep") for the sweep this matrix
 // backs, its results, and the issue (#148) its first full run found.
 
 export const AFFINITIES = ["fire", "water", "earth", "wind", "growth", "decay", "corrode", "fortify", "light", "dark"];
@@ -26,7 +26,7 @@ export const NON_CONTROL_MOTIVATIONS = [
 // controlled dynamic actors") as needing streamed simulation playback to actually be driven, so a
 // plain agon_run pass over this axis is expected to authoring-validate cleanly but act as an inert
 // actor at the run layer — informational, not a failure signal, same caveat as the axis-B
-// cognition-only motivations already noted in mcp-harness-run-through.md.
+// cognition-only motivations already noted in docs/history/mcp-harness-run-through.md.
 export const CONTROL_MOTIVATIONS = ["user_controlled"];
 
 const BASELINE = {

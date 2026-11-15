@@ -4,7 +4,7 @@ These fixtures are **recorded model output, not hand-written**. Each one is a de
 non-success attempt from a single reference content-gen benchmark run, harvested so the 173
 failures that run produced become a sub-second, deterministic regression corpus instead of a
 14-hour, non-deterministic one to re-discover on every run. See
-`coding-issues-affecting-benchmarking.md` -> M0 for the full rationale, and
+`docs/history/coding-issues-affecting-benchmarking.md` -> M0 for the full rationale, and
 `tests/tools/benchmark-failure-corpus-replay.test.js` for the test that replays them.
 
 **Source run:** `2026-08-28T17-48-28-063Z-94b75c0d2094-60bd8e52` (800 attempts, 627 success, 173

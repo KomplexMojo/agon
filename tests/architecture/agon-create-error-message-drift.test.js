@@ -1,4 +1,4 @@
-// Drift guard for error-message-quality-sweep.md (SM0-SM3): re-runs the SM0 survey tool against
+// Drift guard for docs/history/error-message-quality-sweep.md (SM0-SM3): re-runs the SM0 survey tool against
 // today's source and fails if any throw site on the agon_create model-facing surface has no
 // interpolated detail UNLESS it is in the allowlist below with a stated reason. Without this, a
 // new `throw new Error("static string")` on this surface (or a regression stripping detail from an

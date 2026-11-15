@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 
 const { normalizeToolArgs } = require("../../tools/remote-ollama-control/scripts/lib/agon-runner");
 
-// normalizeToolArgs' array repair (M3, see coding-issues-affecting-benchmarking.md) is a general
+// normalizeToolArgs' array repair (M3, see docs/history/coding-issues-affecting-benchmarking.md) is a general
 // bracket-balance fix, not a lookup table of the two malformed strings the benchmark happened to
 // record. tests/fixtures/benchmark-failures/bf-003.json and bf-027.json prove it against those
 // exact real attempts; this file proves the underlying MECHANISM against hand-built cases the

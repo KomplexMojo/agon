@@ -41,7 +41,7 @@ The maintainer reads chat for **two things only**: *is this going the right way*
 
 **Cloud sessions:** no Obsidian vault is required or available; skip the vault steps
 below and work from the open GitHub issues. The unified-actor rewrite is merged and the
-old core engine is retired, so `docs/implementation/unified-actor/` is a historical record,
+old core engine is retired, so `docs/history/unified-actor/` is a historical record,
 not a handoff to continue.
 
 Not optional — a stale vault or an unpatched tool produces wrong structural answers that compound. Steps 5–8 cost seconds.
@@ -245,6 +245,7 @@ Run on every diff. **Fix failures — don't just flag them.** The guards in `tes
 
 Non-load-bearing knowledge (plans, design rationale, dictation, scratch notes) lives in the Obsidian vault; code-binding contracts stay in the repo. Test: "would removing this break a build, test, or agent workflow?" — if no, it belongs in the vault.
 
+- **The vault directory keeps its pre-rename name** (`agent-kernel-vault`); it lives on the maintainer's machines and is not renamed with the repository.
 - **Paths:** Mac `~/Documents/Obsidian/agent-kernel-vault/` · Linux `~/agent-kernel-vault/` · cite via the `~/vault` symlink. Setup: `bash scripts/setup/setup-km.sh`.
 - `local-codex/{Plan,Prompt,Implement,Documentation,Dictation,CodeContext}.md` are symlinks into `~/vault/plans/active/...` and `~/vault/sources/codex-snapshots/...`.
 - Design decisions → `~/vault/decisions/` via `/save`. Cite vault code links as `[[ccg://<pkg>/<path>]]`.

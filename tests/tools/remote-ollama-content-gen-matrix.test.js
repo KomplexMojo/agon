@@ -194,7 +194,7 @@ test("transport errors are infrastructure failures and abort without synthetic m
   assert.equal(records.length, 1, "the triggering infrastructure record is retained before abort");
 });
 
-// M5 (coding-issues-affecting-benchmarking.md): a transport-level LLM failure -- Ollama itself
+// M5 (docs/history/coding-issues-affecting-benchmarking.md): a transport-level LLM failure -- Ollama itself
 // answered with an HTTP error status, its own tool-call parser choking on one generation -- is a
 // bad sample, not a broken rig. runScenario already retries it once; classifyFailureClass decides
 // whether the RESULT still trips the collapse breaker, independent of how many retries happened.
