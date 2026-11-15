@@ -48,7 +48,8 @@ const SCOPE = [
       // normalizeList(...).map(parseXSpec), never via the plural wrappers.
     ],
   },
-  { file: "packages/adapters-cli/src/cli/agon-impl.mjs", functions: ["agentAuthoringCommand", "createCommand"] },
+  // #862: the create handlers moved out of agon-impl.mjs into the authoring command family.
+  { file: "packages/adapters-cli/src/cli/commands/authoring.mjs", functions: ["agentAuthoringCommand", "createCommand"] },
   { file: "packages/runtime/src/build/orchestrate-build.js", wholeFile: true },
   { file: "packages/runtime/src/personas/configurator/actor-authoring.js", wholeFile: true },
   { file: "packages/runtime/src/personas/configurator/artifact-builders.js", wholeFile: true },
@@ -149,7 +150,7 @@ function matchBracket(text, openIndex, openChar, closeChar) {
 
 function findFunctionRange(text, functionName) {
   // Indented too: authoring-specs.js declares its functions inside a factory (#557).
-  const re = new RegExp(`^[ \\t]*(?:async\\s+)?function\\s+${functionName}\\s*\\(`, "m");
+  const re = new RegExp(`^[ \\t]*(?:export\\s+)?(?:async\\s+)?function\\s+${functionName}\\s*\\(`, "m");
   const declMatch = re.exec(text);
   if (!declMatch) return null;
   // The parameter list can itself contain `{` (a destructured default, e.g.
