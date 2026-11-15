@@ -117,9 +117,6 @@
       "why": "icon colours",
       "seam": 741
     },
-    "packages/runtime/src/render/inventory-summary-model.js": {
-      "why": "inventory colours"
-    },
     "packages/runtime/src/render/resource-bundle.js": {
       "why": "asset specs",
       "seam": 741

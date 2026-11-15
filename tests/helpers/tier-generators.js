@@ -46,7 +46,7 @@ async function loadGenerators() {
   if (!generatorPromise) {
     generatorPromise = Promise.all([
       import("../../packages/runtime/src/personas/configurator/level-layout.js"),
-      import("../../packages/runtime/src/personas/configurator/actor-generator.js"),
+      import("./actor-generator.js"),
     ]).then(([layout, actors]) => ({
       generateGridLayoutFromInput: layout.generateGridLayoutFromInput,
       generateActorSet: actors.generateActorSet,

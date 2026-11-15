@@ -5,7 +5,7 @@
  * The roster's `KNOWN_UNREGISTERED` note read "actor-config-generation.js was DELETED by
  * P1.4 as dead code... either something else authors actor configs, or nothing does."
  * Traced: something did, in adapter glue — `agon-impl.mjs`'s `parseDelverSpec` defaulted,
- * validated and assembled the delver candidate object inline. `actor-generator.js`
+ * validated and assembled the delver candidate object inline. `tests/helpers/actor-generator.js`
  * (`generateActorSet`), the Configurator's own dead-looking candidate, is NOT the
  * fulfiller of this responsibility — it is a real, already-used grid-placement fixture
  * generator for scale/perf test data (`tests/helpers/tier-generators.js` →

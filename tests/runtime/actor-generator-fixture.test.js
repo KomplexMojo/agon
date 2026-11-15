@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 
 
 test("actor generator emits stable, async diverse, bounded actors", async () => {
-const { generateActorSet } = await import("../../../packages/runtime/src/personas/configurator/actor-generator.js");
+const { generateActorSet } = await import("../helpers/actor-generator.js");
 
 const result = generateActorSet({
   count: 24,

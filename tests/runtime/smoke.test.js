@@ -10,7 +10,6 @@ const FILES = [
   "packages/runtime/src/ports/solver.js",
   "packages/runtime/src/ports/effects.js",
   "packages/runtime/src/contracts/budget-categories.js",
-  "packages/runtime/src/index.js",
 ];
 
 test("runtime entrypoints exist", () => {

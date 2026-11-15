@@ -1,5 +1,5 @@
-import { AFFINITY_EXPRESSIONS, AFFINITY_KINDS } from "./affinity-loadouts.js";
-import { DEFAULT_VITALS, MOTIVATION_KINDS, VITAL_KEYS } from "../../contracts/domain-constants.js";
+import { AFFINITY_EXPRESSIONS, AFFINITY_KINDS } from "../../packages/runtime/src/personas/configurator/affinity-loadouts.js";
+import { DEFAULT_VITALS, MOTIVATION_KINDS, VITAL_KEYS } from "../../packages/runtime/src/contracts/domain-constants.js";
 
 const DEFAULT_KIND = "ambulatory";
 const DEFAULT_EDGE_PADDING = 1;

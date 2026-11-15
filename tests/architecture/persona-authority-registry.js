@@ -426,7 +426,7 @@ const REGISTRY = Object.freeze([
         + "the Configurator's own surface (configurator-services.js -> controller.js), and "
         + "wired at the single production call site through the existing module-level "
         + "createConfiguratorPersona() instance agon-impl.mjs already constructs for "
-        + "authorCandidates/deriveRoomLayout. actor-generator.js's generateActorSet was "
+        + "authorCandidates/deriveRoomLayout. tests/helpers/actor-generator.js's generateActorSet was "
         + "investigated and is NOT this responsibility's fulfiller: it has a real, "
         + "separate test-fixture consumer (tests/helpers/tier-generators.js -> "
         + "tests/runtime/e2e-fixture-generators.test.js, grid-based scale/perf actor "
