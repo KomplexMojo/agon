@@ -32,7 +32,8 @@ const spriteOf = (entity) => normalizeEntitySpriteState(entity, { role: entity.r
 /**
  * @param {object} view  what `createPlaySession().view()` returns
  * @returns {{ width: number, height: number, cells: object[][], entities: object[], seatHud: object|null }}
- *   `cells[y][x]` is `{ tile, sight }` (`tile` is "fog" where the cell was never seen); `entities` are
+ *   `cells[y][x]` is `{ tile, sight }` (`tile` is "fog" where the cell was never seen; floor, spawn and
+ *   exit cells also carry `floorVariant`, 0..FLOOR_VARIANT_COUNT-1, #854); `entities` are
  *   `{ id, x, y, sprite: { role, affinity } }` for everything the view shows standing in sight.
  */
 export function buildBoardDrawModel(view) {
@@ -42,6 +43,8 @@ export function buildBoardDrawModel(view) {
     const sight = view.sight?.[y]?.[x] ?? PLAY_SIGHT.UNKNOWN;
     if (sight === PLAY_SIGHT.UNKNOWN) return { tile: "fog", sight };
     const tile = tileOf(glyph);
+    const variant = view.floorVariants?.[y]?.[x];
+    if ((tile === "floor" || tile === "spawn" || tile === "exit") && Number.isInteger(variant)) return { tile, sight, floorVariant: variant };
     const mask = view.wallMasks?.[y]?.[x];
     if (tile !== "wall" || !Number.isInteger(mask)) return { tile, sight };
     const blob = view.wallBlobMasks?.[y]?.[x];

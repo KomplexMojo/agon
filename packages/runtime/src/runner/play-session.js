@@ -62,6 +62,7 @@
  * re-runs it on the same level. The simulation is deterministic, so a replay
  * reaches the same state. Writing the artifact to disk is the caller's job.
  */
+import { floorVariantAt } from "../render/floor-variants.js";
 import { AFFINITY_TABLE } from "../../../core-ts/src/state/affinity-table.ts";
 import { ACTOR_COMMAND_KINDS, normalizeActorCommand, normalizeActorStrategy } from "../personas/actor/persona.js";
 import { createConfiguratorPersona } from "../personas/configurator/persona.js";
@@ -891,6 +892,7 @@ export async function createPlaySession({
       legend,
       playerId: activeId,
       glyphSet,
+      seed: simConfig.seed ?? 0,
       tick: currentTick(),
       status: status(),
       visible,
@@ -1152,7 +1154,7 @@ function moveStaminaCosts(cardinal, soaked) {
   };
 }
 
-export function buildPlayView({ snapshot, presentation = {}, legend: baseLegend, playerId, tick, status, visible = null, explored = null, labels = playActorLabels(snapshot.actors, presentation), field = null, drawField = null, reveal = null, upkeepTable = [], castPrices = undefined, movementStamina = undefined, minionUpkeep = 0, glyphSet = "unicode" }) {
+export function buildPlayView({ snapshot, presentation = {}, legend: baseLegend, playerId, tick, status, visible = null, explored = null, labels = playActorLabels(snapshot.actors, presentation), field = null, drawField = null, reveal = null, upkeepTable = [], castPrices = undefined, movementStamina = undefined, minionUpkeep = 0, glyphSet = "unicode", seed = 0 }) {
   // Actor glyphs (#575) come from the glyph set; the table rides on the legend for every UI to read.
   const glyphs = actorGlyphs(glyphSet);
   const legend = { ...baseLegend, ...(baseLegend.barrier === ASCII_TERRAIN_GLYPHS.barrier ? { barrier: glyphs.barrier } : {}) };
@@ -1170,6 +1172,9 @@ export function buildPlayView({ snapshot, presentation = {}, legend: baseLegend,
     wallMasks: frame.wallMasks.map((row, y) => row.map((mask, x) => (fogged.sight[y][x] === PLAY_SIGHT.UNKNOWN ? null : mask))),
     // Reduced 8-neighbour blob mask per wall cell (#829), same sight rule and true-grid derivation.
     wallBlobMasks: frame.wallBlobMasks.map((row, y) => row.map((mask, x) => (fogged.sight[y][x] === PLAY_SIGHT.UNKNOWN ? null : mask))),
+    // Floor face variant per cell (#854): a function of the true grid position and the level seed, so it
+    // is the same under fog, in any window crop, and on every call. null in unknown cells.
+    floorVariants: frame.baseTiles.map((row, y) => [...row].map((_, x) => (fogged.sight[y][x] === PLAY_SIGHT.UNKNOWN ? null : floorVariantAt(x, y, seed)))),
     // Every affinity field on each cell (#287), only where the player sees now: a remembered
     // or unknown cell shows no live field, except the reach of the player's own (Darren,
     // 2026-10-29: you know where your own aura reaches; it tells you nothing about the cell).

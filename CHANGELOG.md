@@ -20,6 +20,7 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 
 ### Added
 
+- Floor face variants (#854): draw-model `floor`, `spawn` and `exit` cells carry `floorVariant` (0..`FLOOR_VARIANT_COUNT`-1, 8 variants), a stable per-cell index from the cell's position in the true grid and the level seed, independent of sight and the window crop. `view().floorVariants` is the grid (null in unknown cells). `FLOOR_VARIANT_COUNT` is exported on `/client`. Additive; ASCII output is unchanged.
 - Wall blob connectivity for 47-face atlases (#829): draw-model wall cells also carry `wallBlobMask` (0..255, reduced 8-neighbour bits `WALL_BLOB_BITS` = N 1, NE 2, E 4, SE 8, S 16, SW 32, W 64, NW 128) and `wallBlobSlot` (0..46, index in `WALL_BLOB_MASKS`, ascending). Same true-grid derivation as `wallMask`, but outside the level counts as wall and a diagonal counts only when both cardinals beside it are wall. Frame windows keep full-level values, fog cells carry none. `view().wallBlobMasks` is the grid. `WALL_BLOB_BITS`, `WALL_BLOB_MASKS` and `wallBlobSlot` are exported on `/client`. Additive; `wallMask` and ASCII glyphs are unchanged.
 
 ## 0.5.0
