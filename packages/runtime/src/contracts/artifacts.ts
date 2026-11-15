@@ -308,6 +308,33 @@ export interface CapturedInputArtifactV1 {
 export type CapturedInputArtifact = CapturedInputArtifactV1;
 
 // -------------------------
+// Play save (#863)
+// -------------------------
+
+export const PLAY_SAVE_SCHEMA = "agon/PlaySave";
+
+/** A saved run: a player capture plus what it takes to resume it and to tell a stale save. */
+export interface PlaySaveArtifactV1 {
+  schema: typeof PLAY_SAVE_SCHEMA;
+  schemaVersion: 1;
+  meta: ArtifactMeta;
+  /** The engine release that made the save (`ENGINE_VERSION`). */
+  engineVersion: string;
+  /** The level the capture belongs to. */
+  level: { simConfigId: string; initialStateId: string; seed: number };
+  /** Digest of the state the capture reached (`playStateDigest`); a replay must reproduce it. */
+  stateDigest: string;
+  tick: number;
+  status: { exited: boolean; atExit: boolean; defeated: boolean };
+  /** The played commands (`source.adapter: "player"`). */
+  capture: CapturedInputArtifactV1;
+  /** Set by the game controller: which of its levels the save is on. */
+  levelIndex?: number;
+}
+
+export type PlaySaveArtifact = PlaySaveArtifactV1;
+
+// -------------------------
 // Agent authoring contract
 // -------------------------
 

@@ -4,7 +4,7 @@
  * IO and no rules: the runtime play session owns the simulation, and a client draws `frame()` its own
  * way (the terminal client's `createGame` adds the ASCII screen on top of this).
  */
-import { createPlaySession, PLAY_DIRECTION_STEPS, replayPlaySession } from "../runner/play-session.js";
+import { createPlaySession, PLAY_DIRECTION_STEPS, replayPlaySession, resumePlaySession } from "../runner/play-session.js";
 import { INTENT } from "./intents.js";
 import { affinityRole } from "../render/affinity-role.js";
 import { AFFINITY_COLOR_HEX } from "../render/affinity-palette.js";
@@ -19,7 +19,7 @@ import { LEVELS, affinityLabel, aimLabel, allyWarningLines, battleLines, castabl
  * @param {boolean} [args.fog] fog of war: you see only what is in sight (default on)
  * @param {boolean} [args.showHelp] start with the key help shown (default)
  */
-export async function createGameController({ levels, startIndex = 0, createSession = createPlaySession, fog = true, showHelp: initialHelp = true, glyphSet = "unicode", window: initialWindow = WINDOW_DEFAULT } = {}) {
+export async function createGameController({ levels, startIndex = 0, createSession = createPlaySession, fog = true, showHelp: initialHelp = true, glyphSet = "unicode", window: initialWindow = WINDOW_DEFAULT, resume = null } = {}) {
   let windowSize = initialWindow;
   if (!Array.isArray(levels) || levels.length === 0) {
     throw new Error("createGame: at least one level is required");
@@ -49,7 +49,25 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     sprintArmed = false;
   }
 
-  await startLevel(levelIndex);
+  // #863: `resume: { levelIndex, save }` starts on that level by replaying the save; a save
+  // this engine no longer reproduces falls back to a fresh start of the level, and says so.
+  if (resume?.save) {
+    const index = Number.isInteger(resume.levelIndex) ? resume.levelIndex : resume.save.levelIndex;
+    if (!Number.isInteger(index) || index < 0 || index >= levels.length) throw new Error(`createGame: resume levelIndex ${index} is not a level`);
+    const level = levels[index];
+    levelIndex = index;
+    try {
+      session = await resumePlaySession({ simConfig: level.simConfig, initialState: level.initialState, save: resume.save, fog, glyphSet,
+        ...(level.costing ? { costing: level.costing } : {}) });
+      turns = resume.save.capture.payload.commands.length;
+    } catch (error) {
+      if (error.code !== "PLAY_SAVE_STALE") throw error;
+      await startLevel(index);
+      message = "The saved run could not be resumed on this version, so the level starts fresh.";
+    }
+  } else {
+    await startLevel(levelIndex);
+  }
 
   // `actorId` commands a party member other than the seated one (a label works too).
   async function act(command, describe = () => "", { actorId } = {}) {
@@ -558,6 +576,11 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     return { ...capture, source: { ...capture.source, request: { level: levels[levelIndex].name } } };
   }
 
+  /** #863: the current level's run as an agon/PlaySave, with the level index to resume on. */
+  function save(meta) {
+    return { ...session.save({ meta }), levelIndex };
+  }
+
   /** Re-run a capture on the current level and continue from where it ended. */
   async function replay(capture) {
     const level = levels[levelIndex];
@@ -694,5 +717,5 @@ export async function createGameController({ levels, startIndex = 0, createSessi
       panel,
     };
   }
-  return { handle, command, switchTo, frame, state, view, debugView, captureInput, replay, slots, toggleSlotAffinity, tuneSlot, panelChoices, setWindow, pointAt };
+  return { handle, command, switchTo, frame, state, view, debugView, captureInput, save, replay, slots, toggleSlotAffinity, tuneSlot, panelChoices, setWindow, pointAt };
 }

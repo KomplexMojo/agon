@@ -76,7 +76,9 @@ import { ASCII_FOG_GLYPH, ASCII_TERRAIN_GLYPHS, asciiCastPathDirection, asciiCas
 import { wallGlyphAt, wallBlobMaskAt, wallGlyphChars, wallMaskAt } from "../render/wall-glyphs.js";
 import { actorGlyphs } from "../render/actor-glyphs.js";
 import { createPlaybackRuntime, createRuntimeCore } from "./core-facade.js";
-import { CAPTURED_INPUT_SCHEMA } from "../contracts/artifacts.ts";
+import { CAPTURED_INPUT_SCHEMA, PLAY_SAVE_SCHEMA } from "../contracts/artifacts.ts";
+import { ENGINE_VERSION } from "../contracts/engine-version.js";
+import { playSaveError, playStateDigest, validatePlaySave } from "./play-save.js";
 import { equippedActorAffinityKeys, exhaustedActorAffinityKeys, MAX_AFFINITY_SLOTS } from "../../../core-ts/src/state/actor-inventory.ts";
 import { unpayableActorAffinities } from "../../../core-ts/src/rules/actor-upkeep.ts";
 import { minionBonds } from "../../../core-ts/src/rules/minion-upkeep.ts";
@@ -965,6 +967,29 @@ export async function createPlaySession({
     };
   }
 
+  /** #863: a digest of the current play state, what a save records and a resume must reproduce. */
+  function stateDigest() {
+    return playStateDigest({ actors: readSnapshot().actors, tick: currentTick(),
+      exited: configuredIds.filter((id) => runtime.hasActorExited(id)) });
+  }
+
+  /** #863: the run so far as an agon/PlaySave (the capture plus level ids, engine version and digest). */
+  function save({ meta } = {}) {
+    const capture = captureInput({ meta });
+    const { tick, exited, atExit, defeated } = status();
+    return {
+      schema: PLAY_SAVE_SCHEMA,
+      schemaVersion: 1,
+      meta: capture.meta,
+      engineVersion: ENGINE_VERSION,
+      level: { simConfigId: simConfig.meta?.id ?? null, initialStateId: initialState.meta?.id ?? null, seed: simConfig.seed ?? 0 },
+      stateDigest: stateDigest(),
+      tick,
+      status: { exited, atExit, defeated },
+      capture,
+    };
+  }
+
   return {
     act,
     actTick,
@@ -979,6 +1004,8 @@ export async function createPlaySession({
     activeActorId: () => activeId,
     debugView,
     captureInput,
+    save,
+    stateDigest,
     playerActorId: playerId,
     viabilityReport,
     pricingReport,
@@ -1381,5 +1408,35 @@ export async function replayPlaySession({ simConfig, initialState, capturedInput
     }
   }
   if (activeActorId !== undefined) session.switchTo(activeActorId);
+  return session;
+}
+
+/**
+ * #863: resume a saved run. Refuses a save from another level (`PLAY_SAVE_WRONG_LEVEL`),
+ * replays its capture through the real tick loop, and checks the result against the save's
+ * digest and tick. A replay that lands elsewhere, or cannot be replayed, throws
+ * `PLAY_SAVE_STALE`, naming the engine that made the save and this one. A version change
+ * alone is not stale: when the digest matches, the run resumes.
+ */
+export async function resumePlaySession({ simConfig, initialState, save, ...options } = {}) {
+  const check = validatePlaySave(save);
+  if (!check.ok) throw playSaveError("PLAY_SAVE_INVALID", `resumePlaySession: not a valid save (${check.errors.join("; ")})`);
+  const here = { simConfigId: simConfig?.meta?.id ?? null, initialStateId: initialState?.meta?.id ?? null };
+  if (save.level.simConfigId !== here.simConfigId || save.level.initialStateId !== here.initialStateId) {
+    throw playSaveError("PLAY_SAVE_WRONG_LEVEL",
+      `resumePlaySession: the save is for level ${save.level.simConfigId} / ${save.level.initialStateId}, not ${here.simConfigId} / ${here.initialStateId}`);
+  }
+  const stale = (detail) => playSaveError("PLAY_SAVE_STALE",
+    `resumePlaySession: the save was made with engine ${save.engineVersion} and this is ${ENGINE_VERSION}; ${detail}`);
+  let session;
+  try {
+    session = await replayPlaySession({ simConfig, initialState, capturedInput: save.capture, ...options });
+  } catch (error) {
+    throw stale(`its commands no longer replay (${error.message})`);
+  }
+  const tick = session.status().tick;
+  if (tick !== save.tick || session.stateDigest() !== save.stateDigest) {
+    throw stale(`replaying it reaches a different state (tick ${tick}, saved ${save.tick})`);
+  }
   return session;
 }
