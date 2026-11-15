@@ -8,7 +8,7 @@
  *   -> packages/adapters-cli/src/cli/agon-impl.mjs executeCommand("create", argv)
  *
  * GROUND TRUTH (confirmed by direct invocation during test authoring, and
- * rendered visually by index_c.html via agon_push_to_ui):
+ * rendered visually in a game client):
  *   - Benchmark scenario 24 ("Hazard Gauntlet": 2 rooms + 4 non-blocking hazards
  *     at (1,1),(2,2),(3,3),(4,4)) produces a 30x30 grid where all 4 hazards sit
  *     on a disconnected diagonal of carved floor in the top-left corner —
@@ -359,7 +359,7 @@ test("i3 positioned and auto-placed hazards obey the same room-containment contr
   }
 });
 
-test("i3 push_to_ui bundle renders every hazard inside a room outline", async () => {
+test("i3 create-time bundle renders every hazard inside a room outline", async () => {
   // The create-time bundle is the artifact the UI pipeline consumes here, so
   // this pins the same room-contained hazard geometry on the bundle/manifest
   // side rather than inventing a separate render-only seam.

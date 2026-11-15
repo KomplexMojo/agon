@@ -3,9 +3,6 @@ const { spawn } = require("node:child_process");
 const { existsSync, mkdtempSync, readFileSync, writeFileSync } = require("node:fs");
 const { resolve, join } = require("node:path");
 const os = require("node:os");
-const { createServer: createNetServer } = require("node:net");
-// Node 22's built-in WebSocket (available since Node 21) — no ws import needed.
-const { WebSocket } = globalThis;
 
 const ROOT = resolve(__dirname, "../../..");
 const SERVER = resolve(ROOT, "packages/adapters-cli/src/mcp/server.mjs");
@@ -187,17 +184,6 @@ class McpServerHarness {
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));
-}
-
-function getFreePort() {
-  return new Promise((resolvePort, reject) => {
-    const srv = createNetServer();
-    srv.listen(0, "127.0.0.1", () => {
-      const { port } = srv.address();
-      srv.close((err) => (err ? reject(err) : resolvePort(port)));
-    });
-    srv.on("error", reject);
-  });
 }
 
 test("mcp server lists required tools and schemas round-trips over stdio", async () => {
@@ -419,7 +405,7 @@ test("mcp agon_run stitches tickFrames into bundle.json even when run in place (
   // at the same directory as --sim-config (the natural choice: no reason to
   // invent a nested subdirectory just to run what you just created). The run
   // still executes and writes tick-frames.json correctly; only the bundle.json
-  // that agon_push_to_ui reads is left stale, silently missing every tick.
+  // that a client loads is left stale, silently missing every tick.
   const harness = new McpServerHarness();
   try {
     await harness.initialize();
@@ -542,67 +528,15 @@ test("mcp hazard-plan and resource-plan tools produce cardSet entries the Design
   }
 });
 
-test("mcp server starts the sandbox bridge on boot so agon_push_to_ui can deliver to a connected UI client", async () => {
-  const bridgePort = await getFreePort();
-  const harness = new McpServerHarness({ AGON_SANDBOX_BRIDGE_PORT: String(bridgePort) });
-  let ws;
-  try {
-    await harness.initialize();
-
-    ws = await new Promise((resolveWs, rejectWs) => {
-      const client = new WebSocket(`ws://127.0.0.1:${bridgePort}/agon-sandbox`);
-      client.addEventListener("open", () => resolveWs(client));
-      client.addEventListener("error", (e) => rejectWs(e.error ?? new Error("ws connect failed")));
-    });
-
-    ws.addEventListener("message", (event) => {
-      const msg = JSON.parse(event.data);
-      if (msg.type === "agon.gameplayBundle.v1") {
-        ws.send(JSON.stringify({
-          type: "agon.bundleLoaded.v1",
-          clientId: "mcp_boot_test_client",
-          messageId: msg.id,
-        }));
-      }
-    });
-
-    ws.send(JSON.stringify({
-      type: "agon.uiReady.v1",
-      clientId: "mcp_boot_test_client",
-      capabilities: { loadGameplayBundle: true },
-    }));
-    // Let the server register the client before pushing.
-    await new Promise((r) => setTimeout(r, 50));
-
-    const pushResult = await harness.callTool("agon_push_to_ui", {
-      bundle: { schema: "agon/GameplayBundle", schemaVersion: 1, artifacts: [] },
-      targetTab: "design",
-    });
-
-    assert.equal(pushResult.bridge.port, bridgePort);
-    assert.equal(pushResult.bridge.connectedClients, 1);
-    assert.deepEqual(pushResult.bridge.deliveredClientIds, ["mcp_boot_test_client"]);
-    assert.equal(pushResult.bridge.timedOutClientIds.length, 0);
-  } finally {
-    ws?.close();
-    await harness.close();
-  }
-});
-
 test("mcp server exits when its stdin ends, even with no kill signal ever sent (Finding #2b)", async () => {
-  // Before the sandbox bridge existed, an orphaned server.mjs (parent gone, no explicit
-  // SIGTERM/SIGKILL ever delivered — e.g. a crashed harness or worker-pool churn) would just
-  // fall out of Node's event loop once stdin drained, since nothing else held an open handle.
-  // StdioServerTransport never listens for stdin "end" itself, so that was always an *implicit*
-  // fallback, not a real shutdown path. The sandbox bridge's listening socket holds a permanent
-  // ref, which silently broke that fallback: with no explicit stdin-end/SIGTERM handling, an
-  // orphaned server now runs forever as a zombie squatting the bridge port. This spawns a real
-  // server, closes ONLY its stdin (deliberately never sends any signal, mirroring "parent died
-  // silently"), and asserts the process still exits on its own.
-  const bridgePort = await getFreePort();
+  // StdioServerTransport never listens for stdin "end" itself, so an orphaned server.mjs
+  // (parent gone, no SIGTERM/SIGKILL ever delivered, e.g. a crashed harness) relied on the event
+  // loop draining. server.mjs now exits explicitly on stdin end. This spawns a real server, closes
+  // ONLY its stdin (deliberately never sends any signal, mirroring "parent died silently"), and
+  // asserts the process exits on its own.
   const proc = spawn(process.execPath, [SERVER], {
     cwd: ROOT,
-    env: { ...process.env, AGON_SANDBOX_BRIDGE_PORT: String(bridgePort) },
+    env: { ...process.env },
     stdio: ["pipe", "pipe", "pipe"],
   });
   try {

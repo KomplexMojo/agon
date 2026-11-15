@@ -58,9 +58,6 @@ behaviors have a passing G1 test and which do not. Those blocks mirror
 | `packages/adapters-cli/src/adapters/ipfs/README.md` | CLI IPFS fetches via an HTTP gateway. |
 | `packages/adapters-cli/src/adapters/blockchain/README.md` | CLI blockchain reads over JSON-RPC. |
 | `packages/adapters-cli/src/adapters/solver-z3/README.md` | Fixture-friendly solver stub behind the CLI `solve` command; no process spawn. |
-| `packages/adapters-web/src/adapters/llm/README.md` | Browser LLM adapter (same endpoint contract as the CLI one). |
-| `packages/adapters-web/src/adapters/ipfs/README.md` | Browser IPFS fetches via an HTTP gateway. |
-| `packages/adapters-web/src/adapters/blockchain/README.md` | Browser blockchain reads over JSON-RPC. |
 | `packages/adapters-test/README.md` | Deterministic fixture-backed test doubles for external IO. |
 | `packages/adapters-test/src/adapters/llm/README.md` | Deterministic LLM fixtures — no model dependency. |
 | `packages/adapters-test/src/adapters/ipfs/README.md` | Deterministic IPFS fixtures — no network. |

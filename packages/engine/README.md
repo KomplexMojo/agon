@@ -21,7 +21,7 @@ The file-path subpaths (`@agon-engine/engine/runtime/...` and so on) still resol
 
 ## The command line
 
-The package installs an `agon` command (`npx agon create ...`; `npx agon` with no arguments lists the commands). Building a level with the solver needs the optional peer `z3-solver`; `agon` serving a browser needs `ws`.
+The package installs an `agon` command (`npx agon create ...`; `npx agon` with no arguments lists the commands). Building a level with the solver needs the optional peer `z3-solver`.
 
 ## What may change
 

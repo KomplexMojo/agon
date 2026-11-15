@@ -11,7 +11,6 @@ const { resolve } = require("node:path");
 const ROOT = resolve(__dirname, "../..");
 const ADAPTERS = [
   "packages/adapters-cli/src/adapters/z3/index.js",
-  "packages/adapters-web/src/adapters/z3/index.js",
   "packages/adapters-test/src/adapters/solver/z3-adapter.js",
 ];
 const SHARED = "packages/runtime/src/personas/_shared/runtime-decision.mts";

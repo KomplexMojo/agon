@@ -31,7 +31,7 @@ The goal is not to invent tests from raw prose. The goal is to:
 - `tests/core-ts/`: pure deterministic core behavior.
 - `tests/architecture/`: dependency-direction and charter/persona authority guards.
 - `tests/contracts/`: artifact schema contracts.
-- `tests/adapters-cli/`, `tests/adapters-web/`, `tests/adapters-test/`: adapter-level behavior.
+- `tests/adapters-cli/`, `tests/adapters-test/`: adapter-level behavior.
 - `tests/integration/`: cross-package and MCP/CLI/UI flows.
 - `tests/ui-ascii/`: the reference terminal client, headless.
 - `tests/tools/`: repo tool / benchmark-harness helpers under test.
@@ -112,12 +112,9 @@ Prefer these recipe families before free-form authoring:
 - `runtime_module_contract`
 - `runtime_persona_transition`
 
-Every cataloged recipe family has scaffold support except `browser_bundle_load_flow`,
-which needs a real browser and lost its generator with the Playwright subsystem.
-
-For the rarest family, keep the scaffold narrow and pattern-matched:
-
-- `ui_cli_equivalence`
+Every cataloged recipe family has scaffold support except `browser_bundle_load_flow`
+(needs a real browser; lost its generator with the Playwright subsystem) and
+`ui_cli_equivalence` (the browser-host half was removed in #859).
 
 ## Why Tests Are Skipped
 

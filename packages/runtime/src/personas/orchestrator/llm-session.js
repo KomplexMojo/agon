@@ -12,7 +12,7 @@ import {
 import { buildLlmCaptureArtifact } from "./llm-capture.js";
 // Pure string transform, no IO and no Node built-ins (#188). Imported by path, not by bare
 // specifier: the browser loads the runtime as plain ES modules, including inside module
-// workers (adapters-web cli-worker), and workers cannot use an import map. The path is
+// workers, and workers cannot use an import map. The path is
 // this package's own pnpm link, so Node and the served page resolve the same file (#314).
 import { jsonrepair } from "../../../node_modules/jsonrepair/lib/esm/index.js";
 

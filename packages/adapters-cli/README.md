@@ -900,7 +900,7 @@ writes that bundle to `bundle.json` in the run outDir, upgrades the create outDi
 bundle-free so CLI run output remains artifact-for-artifact equivalent to the browser
 host's run output. The run also persists the Allocator-issued
 `runtime-budget-receipt.json`; when a gameplay bundle is stitched, it includes that
-artifact unchanged. The stitched bundle is what `agon_push_to_ui` delivers to the UI.
+artifact unchanged. The stitched bundle is the one file a client loads to play the run back.
 
 ### `configurator`
 Build `SimConfigArtifact` + `InitialStateArtifact` outputs from deterministic configurator inputs.
@@ -1229,26 +1229,6 @@ receipt the Allocator approves (a `partial` or `denied` receipt is refused with 
 issued `budget-receipt.json` and `price-list.json` are written to `--out-dir` and the session's
 `budgetReceiptRef` names that receipt. `sandbox-place` names no `planRef`, since no Director plans a
 sandbox.
-
-## MCP sandbox bridge (`agon_push_to_ui`)
-
-The MCP server's `agon_push_to_ui` tool delivers an `agon/GameplayBundle` to a
-connected browser UI over the sandbox WebSocket bridge
-(`packages/adapters-cli/src/mcp/bridge-server.mjs`), so an agent can author with
-`agon_create`, execute with `agon_run`, and load the result into the gameplay surface
-without manual file handoff.
-
-- Bundle source (one of): inline `bundle`, an explicit `bundlePath`, or an `outDir`
-  containing `bundle.json` (the shape written by `run`'s post-run stitching or by
-  `create` pre-run).
-- `targetTab`: `"design"` or `"gameplay"` (default `"gameplay"`).
-- `requireClient` (default `true`): fail if no UI client is connected. Agon ships no
-  browser client since the web UI was archived in Primordial (#744), and `openBrowser` is gone:
-  the bridge is the port a game client connects to.
-- Bridge port: `38487` by default, overridable with `AGON_SANDBOX_BRIDGE_PORT`.
-- Failure results are structured: missing bundle sources, invalid bundle shape, bridge
-  start failure (`SANDBOX_BRIDGE_START_FAILED`), and no-connected-client cases each
-  return `ok: false` with a specific reason rather than throwing.
 
 ## Architectural Intent
 

@@ -24,8 +24,8 @@ npm install @agon-engine/engine
 
 The public API is five named entries: `@agon-engine/engine/client` (play and draw), `/authoring` (build levels
 and characters), `/skin` (palette, sprites, resource bundle), `/vocabulary` (kinds, vitals, motivations, sound
-cues) and `/terminal` (the reference terminal client). `z3-solver` and `ws` are optional peers, needed only for
-solver and bridge commands.
+cues) and `/terminal` (the reference terminal client). `z3-solver` is an optional peer, needed only for
+solver commands.
 
 ## 2. Get a level
 

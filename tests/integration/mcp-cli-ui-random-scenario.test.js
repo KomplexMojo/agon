@@ -5,7 +5,7 @@
  * and 1 delver. The wardens and delvers should have random movement
  * motivation. Run the simulation for 100 ticks." driven through the MCP tool
  * surface -> CLI -> the bundle that would be pushed to the UI gameplay
- * surface via the sandbox bridge.
+ * surface.
  *
  * Seam driven (exact same seam the MCP server itself uses):
  *   - packages/adapters-cli/src/mcp/tools/authoring.mjs  authoringTools[0]  (agon_create),
@@ -409,24 +409,6 @@ describe("MCP -> CLI random-movement scenario pipeline (5 rooms / 10 wardens / 1
     } finally {
       rmSync(bundleOutDir, { recursive: true, force: true });
     }
-  });
-
-  test("no agon_push_to_ui MCP tool exists yet to deliver the bundle over the sandbox bridge (M7 gap)", async () => {
-    // sandboxTools currently exposes agon_sandbox_create / agon_sandbox_place /
-    // agon_sandbox_move only (packages/adapters-cli/src/mcp/tools/sandbox.mjs) —
-    // none of these push a compiled GameplayBundle over the WS bridge
-    // (packages/adapters-cli/src/mcp/bridge-server.mjs pushGameplayBundle).
-    // This assertion documents and pins that gap per the sandbox-consolidation
-    // plan (rename -> agon_push_to_ui) so it fails loudly until M7 wires it up.
-    const sandboxToolsModule = await import("../../packages/adapters-cli/src/mcp/tools/sandbox.mjs");
-    const server = await import("../../packages/adapters-cli/src/mcp/server.mjs").catch(() => null);
-    void server; // server.mjs self-connects a stdio transport on import; avoid importing it directly here.
-
-    const toolNames = sandboxToolsModule.sandboxTools.map((t) => t.name);
-    assert.ok(
-      toolNames.includes("agon_push_to_ui"),
-      `expected an "agon_push_to_ui" MCP tool wiring create/run output to the sandbox bridge; found tools: ${toolNames.join(", ")}`,
-    );
   });
 });
 

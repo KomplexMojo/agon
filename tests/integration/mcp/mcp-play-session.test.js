@@ -18,8 +18,7 @@ const FLOOR = "vitals=health:10:1,mana:10:1,stamina:10:1,durability:10:1";
 function startServer() {
   const child = spawn(process.execPath, [SERVER], {
     cwd: ROOT,
-    // Port 0: an OS-chosen sandbox bridge port, so parallel servers never collide.
-    env: { ...process.env, AGON_SANDBOX_BRIDGE_PORT: "0", AGON_PLAY_SESSIONS_DIR: SESSIONS },
+    env: { ...process.env, AGON_PLAY_SESSIONS_DIR: SESSIONS },
     stdio: ["pipe", "pipe", "pipe"],
   });
   let buffer = "";

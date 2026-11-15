@@ -608,13 +608,6 @@ Heavy level synthesis runs behind a builder adapter. UI code hands off summaries
 - Terminal colour follows the same single origin as every other surface: `packages/runtime/src/render/ascii-cell-style.js` maps board characters to `GAME_COLOR_PALETTE` entries (tile fills as backgrounds, role colours for what stands on them, `motivations.user_controlled` for the player). `ui-ascii` only converts the returned hex to ANSI escapes.
 - Every other actor takes its turn: `act` is one `runtime.step({ actorCommands: { [playerActorId]: command } })`. The Actor persona owns the command vocabulary and turns the command into the player's proposal; the runner only routes it to that actor. Because the runtime now flushes core's effects, `atExit` reads "standing on core's exit-approach seat" (the cell core's exit dwell counts) instead of LimitReached.
 
-## Sandbox Bridge (MCP → CLI → UI)
-
-- The `agon_push_to_ui` MCP tool delivers an `agon/GameplayBundle` to a connected UI client over the sandbox WebSocket bridge (`packages/adapters-cli/src/mcp/bridge-server.mjs`, default port 38487, override with `AGON_SANDBOX_BRIDGE_PORT`).
-- The tool accepts an inline `bundle`, a `bundlePath`, or an `outDir` containing `bundle.json`. The framework ships no browser client since `ui-web` was archived (#744), and no longer serves or opens one (`openBrowser` is gone); the bridge is the port a game client connects to.
-- CLI `run` stitches a post-run `GameplayBundle` (`bundle.json`) only when its inputs came from an authored `create` outDir; fixture-driven runs stay bundle-free so CLI output remains artifact-for-artifact equivalent to the browser host's run output.
-- The bridge is an adapter-layer concern: bundle assembly reuses runtime contracts, and no bridge or WebSocket code lives in `runtime` or `core-ts`.
-
 ## Affinity Visualization
 
 - `core-ts` affinity field buffers are the canonical source for tile affinity visualization.
