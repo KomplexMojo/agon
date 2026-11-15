@@ -172,7 +172,7 @@ At a high level, the Configurator:
 >
 > Not the same responsibility as the candidate-authoring block above: that one assembles **priced
 > cards** for the Allocator to judge; this one assembles a request's **actor roster entry**
-> directly, with no pricing involved. `actor-generator.js`'s `generateActorSet` was investigated
+> directly, with no pricing involved. `tests/helpers/actor-generator.js`'s `generateActorSet` was investigated
 > as a possible fulfiller and ruled out — it is a real, separate grid-placement generator for
 > scale/perf test fixtures (`tests/helpers/tier-generators.js`), untouched by this milestone.
 >

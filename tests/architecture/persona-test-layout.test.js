@@ -56,8 +56,6 @@ const CROSS_PERSONA_FILES = Object.freeze({
     "the shared tick FSM itself — every persona advances through it, none owns it",
   "tick-orchestrator.test.js":
     "phase dispatch ACROSS the roster; keyed by no single persona",
-  "tick-inspect.test.js":
-    "reads the personaViews of all seven to build the inspection view",
   "dual-surface-shadowing.test.js":
     "PX.5 — the build plane vs tick plane split, which is a claim about two planes "
     + "rather than about one persona",
