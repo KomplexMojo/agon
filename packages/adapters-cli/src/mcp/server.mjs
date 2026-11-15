@@ -19,11 +19,9 @@ import { testingTools } from "./tools/testing.mjs";
 import { tickTools } from "./tools/tick.mjs";
 import { playTools } from "./tools/play.mjs";
 import { sandboxTools } from "./tools/sandbox.mjs";
-import { startSandboxBridgeServer, stopSandboxBridgeServer } from "./bridge-server.mjs";
 
 const SERVER_NAME = "agon-cli";
 const SERVER_VERSION = "1.0.0";
-const SANDBOX_BRIDGE_PORT = Number(process.env.AGON_SANDBOX_BRIDGE_PORT) || 38487;
 const TOOL_DEFINITIONS = [
   ...authoringTools,
   ...simulationTools,
@@ -443,35 +441,12 @@ async function handleToolRequest(request, extra) {
 
 server.setRequestHandler(CallToolRequestSchema, async (request, extra) => enqueueCommand(() => handleToolRequest(request, extra)));
 
-// Bind the sandbox WS bridge so agon_push_to_ui / agon_sandbox_push_ui have a live server to
-// deliver to. A bind failure (e.g. port already in use) must not crash the MCP server —
-// getSandboxBridgeState().startFailed already surfaces it to those tools as SANDBOX_BRIDGE_START_FAILED.
-try {
-  await startSandboxBridgeServer({ port: SANDBOX_BRIDGE_PORT });
-} catch {
-  /* best-effort */
-}
-
 const transport = new StdioServerTransport();
 await server.connect(transport);
 
-// Finding #2b: StdioServerTransport never listens for stdin "end", and nothing here handled
-// SIGTERM/SIGINT either — so a parent that disappears without delivering an explicit kill
-// signal (worker-pool churn, a crashed harness) left this process with no way to exit. That
-// was invisible before the sandbox bridge existed, because with no other open handles Node's
-// event loop just drained naturally once stdin ended. The bridge's listening socket holds a
-// permanent ref, so that implicit fallback stopped working the moment Finding #1 wired it in.
-let shuttingDown = false;
-async function shutdown() {
-  if (shuttingDown) return;
-  shuttingDown = true;
-  const forceExit = setTimeout(() => process.exit(0), 2000).unref();
-  try {
-    await stopSandboxBridgeServer();
-  } catch {
-    /* best-effort */
-  }
-  clearTimeout(forceExit);
+// StdioServerTransport never listens for stdin "end", so a parent that disappears without
+// delivering a kill signal would leave this process running. Exit on end, SIGTERM and SIGINT.
+function shutdown() {
   process.exit(0);
 }
 process.stdin.on("end", shutdown);

@@ -63,7 +63,6 @@ export function publicSubpath(modulePath) {
  */
 const OPTIONAL_STUBS = {
   "z3-solver": ["init"],
-  ws: ["WebSocketServer"],
 };
 
 const optionalPeers = {
@@ -71,7 +70,7 @@ const optionalPeers = {
   setup(b) {
     // The stub's own `import("z3-solver")` must reach the installed package: left to this resolver
     // it resolved to the stub again, so the peer was reported missing even when it was installed.
-    b.onResolve({ filter: /^(z3-solver|ws)$/ }, (args) => (args.namespace === "optional-peer"
+    b.onResolve({ filter: /^(z3-solver)$/ }, (args) => (args.namespace === "optional-peer"
       ? { path: args.path, external: true }
       : { path: args.path, namespace: "optional-peer" }));
     b.onLoad({ filter: /.*/, namespace: "optional-peer" }, (args) => {

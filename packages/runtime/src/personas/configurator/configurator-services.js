@@ -104,10 +104,10 @@ import { fitTacticHazards, composeFieldHazard } from "./minefield.js";
 import { nameUnnamedHazardAffinities } from "./unnamed-affinity.js";
 import { normalizeMotivationRulesArtifact, resolveMotivationRules } from "./motivation-rules.js";
 /**
- * CR.7 / WP-5 — level PREVIEW rendering, published for the web level-builder adapter.
+ * CR.7 / WP-5 — level PREVIEW rendering, published for browser-hosted builders.
  *
- * `adapters-web/adapters/level-builder/{index,worker}.js` imported
- * `configurator/guidance-level-builder.js` directly and were two allowlist rows. Turning a
+ * Clients imported
+ * `configurator/guidance-level-builder.js` directly and were allowlist rows. Turning a
  * guidance summary or a levelGen into a previewable level is Configurator geometry; an adapter's
  * job is the IO around it, not the geometry itself.
  *
@@ -502,7 +502,7 @@ export function attachConfiguratorServices({ fsm } = {}) {
     // CR.7 / WP-5 — the third card-model derivation. Its two siblings were already published
     // as `deriveRoomLayout` and `buildRoomDesign`; only this one had no public name.
     deriveLevelGenFromRoomCards,
-    // CR.7 / WP-5 — level preview rendering for the web level-builder adapter.
+    // CR.7 / WP-5 — level preview rendering for browser-hosted builders.
     buildLevelPreviewFromGuidanceSummary,
     buildLevelPreviewFromLevelGen,
     buildLevelRenderArtifactsFromTiles,

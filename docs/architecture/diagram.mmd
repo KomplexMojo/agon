@@ -54,7 +54,6 @@ flowchart LR
     HybridAdapter["hybrid constraint adapter\nActor: opaque tuple stable sort\nAllocator: generic Z3 compiler"]
     AllocatorZ3["Z3 Optimize\nAllocator domain only"]
     TestSolverAdapter["opaque tuple fixture adapter\n(adapters-test)"]
-    BridgeServer["sandbox bridge server (WS)\n(adapters-cli)"]
   end
 
   subgraph External["External Services"]
@@ -70,8 +69,6 @@ flowchart LR
   RunViewer --> PlaySession
   CLI --> ACli
   MCP --> ACli
-  MCP -- "agon_push_to_ui\nGameplayBundle" --> BridgeServer
-  BridgeServer -- "WebSocket (a game client connects)" --> GameClients
   AWeb --> CommandKernel
   ACli --> CommandKernel
   CommandKernel --> CardAuthoring

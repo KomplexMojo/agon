@@ -51,14 +51,10 @@
     "./adapters-cli/cli/playtest-scenarios.json": "./dist/adapters-cli/cli/playtest-scenarios.json"
   },
   "peerDependencies": {
-    "z3-solver": "^5.1.0",
-    "ws": "^8.21.0"
+    "z3-solver": "^5.1.0"
   },
   "peerDependenciesMeta": {
     "z3-solver": {
-      "optional": true
-    },
-    "ws": {
       "optional": true
     }
   }

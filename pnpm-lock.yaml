@@ -29,9 +29,6 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.3.6)
-      ws:
-        specifier: ^8.21.0
-        version: 8.21.0
       z3-solver:
         specifier: ^5.1.0
         version: 5.1.0
@@ -48,9 +45,6 @@ importers:
 
   packages/engine:
     dependencies:
-      ws:
-        specifier: ^8.21.0
-        version: 8.21.0
       z3-solver:
         specifier: ^5.1.0
         version: 5.1.0
@@ -1349,18 +1343,6 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
-  ws@8.21.0:
-    resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
   z3-solver@5.1.0:
     resolution: {integrity: sha512-U5tXTwtJKnBfqmAx152fkHXN2kh0oT5X3zCUmMAPBu/7OPUEAYADnxJXQKs3nXxU/7GcEUbUpXeM3g1i5U5sqA==}
     engines: {node: '>=16'}
@@ -2542,8 +2524,6 @@ snapshots:
       strip-ansi: 7.2.0
 
   wrappy@1.0.2: {}
-
-  ws@8.21.0: {}
 
   z3-solver@5.1.0:
     dependencies:

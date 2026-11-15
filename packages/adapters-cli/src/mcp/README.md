@@ -45,7 +45,7 @@ Use the CLI directly when you want:
 | Inspect outputs | `agon_show`, `agon_diff`, `agon_runs_list`, `agon_inspect`, `agon_narrate`, `agon_schemas` | Summaries, schema catalog, narrative output |
 | LLM planning | `agon_llm`, `agon_ollama`, `agon_llm_plan` | Captured LLM responses and generated artifacts |
 | External adapters | `agon_ipfs`, `agon_ipfs_publish`, `agon_ipfs_load`, `agon_blockchain`, `agon_blockchain_mint`, `agon_blockchain_load` | Adapter response artifacts |
-| Sandbox / interactive | `agon_sandbox_create`, `agon_sandbox_place`, `agon_sandbox_move`, `agon_push_to_ui`, `agon_show_state`, `agon_tick_forward`, `agon_tick_backward`, `agon_play_ascii`, `agon_play_start`, `agon_play_act`, `agon_play_view`, `agon_play_switch`, `agon_play_order`, `agon_play_advance`, `agon_play_tick`, `agon_play_end` | Sandbox session, action sequence, tick/ASCII/image state, the terminal UI board |
+| Sandbox / interactive | `agon_sandbox_create`, `agon_sandbox_place`, `agon_sandbox_move`, `agon_show_state`, `agon_tick_forward`, `agon_tick_backward`, `agon_play_ascii`, `agon_play_start`, `agon_play_act`, `agon_play_view`, `agon_play_switch`, `agon_play_order`, `agon_play_advance`, `agon_play_tick`, `agon_play_end` | Sandbox session, action sequence, tick/ASCII/image state, the terminal UI board |
 | Test authoring | `agon_test_list_suites`, `agon_test_discover_patterns`, `agon_test_plan_from_change`, `agon_test_run`, `agon_test_scaffold_case`, `agon_test_insert_case`, `agon_test_explain_failure`, `agon_test_lint_structure` | Inventory summaries, scaffolded test files, run results |
 
 The most common agent loop is: `agon_create` or `agon_llm_plan` -> `agon_run` -> `agon_show`/`agon_inspect` -> `agon_narrate` or `agon_diff`.
@@ -277,7 +277,6 @@ The MCP server stays the same. Only LLM-backed tools such as `agon_llm`, `agon_o
 | agon_sandbox_create | Sandbox / Interactive | Create a standalone Phaser sandbox session with budget enforcement. | budgetReceipt, budget, width, height, entityCategories |
 | agon_sandbox_place | Sandbox / Interactive | Place and configure an entity in an existing sandbox session. | session, entityType, spec |
 | agon_sandbox_move | Sandbox / Interactive | Compose a single-tile move for an actor in a sandbox session. | session, actorId, direction, actionsOut |
-| agon_push_to_ui | Sandbox / Interactive | Deliver a compiled GameplayBundle to the connected browser UI over the sandbox bridge. | outDir, bundlePath, bundle, targetTab, requireClient, openBrowser, correlationId |
 | agon_show_state | Sandbox / Interactive | Show current dungeon state for a run at the session cursor tick. | runId, visualization |
 | agon_tick_forward | Sandbox / Interactive | Advance the interactive session cursor forward by one tick. | runId, visualization |
 | agon_tick_backward | Sandbox / Interactive | Rewind the interactive session cursor back by one tick. | runId, visualization |
@@ -1692,44 +1691,6 @@ Expected output shape:
   "actorId": "delver_1",
   "direction": "east",
   "actionsOut": "/tmp/agon/sandbox/actions.json"
-}
-```
-
-#### `agon_push_to_ui`
-
-Delivers a compiled `agon/GameplayBundle` (produced by `agon_create` + `agon_run`) to the connected browser UI over the sandbox WebSocket bridge. Accepts an explicit `bundlePath`, an `outDir` containing `bundle.json`, or an inline `bundle` object. Returns `ok: false` with `bundleNotFound: true`, `SANDBOX_UI_NOT_CONNECTED`, or `SANDBOX_BRIDGE_START_FAILED` for the corresponding failure.
-
-> The bridge is a raw WebSocket port opened directly by the MCP server process and requires the browser loading the UI to reach that same port on the same machine. If the MCP server runs in a different network namespace than the calling harness's own browser/preview surface, prefer `agon_show_state` / `agon_tick_forward` / `agon_tick_backward` with a `visualization` mode instead — those return state over the MCP response itself, with no second network hop.
-
-Schema:
-
-| Parameter | Type | Required | Notes |
-| --- | --- | --- | --- |
-| outDir | string | no | Run or create outDir containing bundle.json |
-| bundlePath | string | no | Explicit path to a GameplayBundle JSON file |
-| bundle | object | no | Inline GameplayBundle object; takes precedence over bundlePath/outDir |
-| targetTab | string | no | design or gameplay; defaults to gameplay |
-| requireClient | boolean | no | Fail immediately if no browser UI is connected; default true |
-| openBrowser | boolean | no | Serve the UI and open it in the default browser, pre-staging the bundle; implies requireClient: false |
-| correlationId | string | no | Caller-supplied correlation ID echoed back in the result |
-
-Example call:
-
-```json
-{
-  "outDir": "/tmp/agon/run",
-  "targetTab": "gameplay"
-}
-```
-
-Expected output shape:
-
-```json
-{
-  "ok": true,
-  "command": "push-to-ui",
-  "targetTab": "gameplay",
-  "delivered": true
 }
 ```
 

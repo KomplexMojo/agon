@@ -13,8 +13,6 @@ const SERVER = resolve(ROOT, "packages/adapters-cli/src/mcp/server.mjs");
 function startServer() {
   const child = spawn(process.execPath, [SERVER], {
     cwd: ROOT,
-    // Port 0: an OS-chosen sandbox bridge port, so parallel servers never collide.
-    env: { ...process.env, AGON_SANDBOX_BRIDGE_PORT: "0" },
     stdio: ["pipe", "pipe", "pipe"],
   });
   let buffer = "";

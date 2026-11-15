@@ -986,8 +986,7 @@ async function summarizeBuildLikeOutput({
 // recorded. Matches the shape produced by
 // packages/runtime/src/runner/core-facade.js compileScenarioPlaybackBundle
 // ({ schema, schemaVersion, meta, artifacts: [simConfig, initialState], spec, tickFrames })
-// so the UI's window.__ak_loadGameplayBundle / sandbox-bridge-client can consume
-// it unchanged. Unlike compileScenarioPlaybackBundle (which re-runs the
+// so a game client can consume it unchanged. Unlike compileScenarioPlaybackBundle (which re-runs the
 // simulation itself), this reuses the tick frames already produced by `run`
 // rather than re-executing the sim.
 function buildGameplayBundleFromRunArtifacts({
@@ -1052,7 +1051,7 @@ async function summarizeRunOutput({ outDir, args, pricingReport } = {}) {
   }
 
   // M7 gap 3: stitch a post-run agon/GameplayBundle from the artifacts
-  // this run just (re)wrote so agon_push_to_ui has something to deliver to the UI.
+  // this run just (re)wrote, so a client can load the whole run from one file.
   const runId = runSummary?.meta?.runId || simConfig?.meta?.runId || initialState?.meta?.runId || "";
   const tickFrames = await readJsonIfExists(artifactPaths.tick_frames);
   const runtimeBudgetReceipt = await readJsonIfExists(artifactPaths.runtime_budget_receipt);
@@ -1067,7 +1066,7 @@ async function summarizeRunOutput({ outDir, args, pricingReport } = {}) {
   // Only stitch when the run's inputs came from an authored create outDir
   // (identified by its pre-run bundle.json sibling). Fixture-driven runs stay
   // bundle-free so CLI run output remains artifact-for-artifact equivalent to
-  // the browser host's run output (tests/integration/ui-cli-equivalence.test.js).
+  // a game client's run output.
   // Read unconditionally: when --out-dir is run in place (the same directory
   // as --sim-config, a natural choice with nothing in the CLI docs against
   // it), createBundlePath equals the run's own bundle.json path, but the read

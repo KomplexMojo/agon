@@ -359,7 +359,7 @@ test("mcp agon_sandbox_place writes a bundle.json sibling so a later agon_run ca
   // run's --sim-config path has a sibling bundle.json (agon-impl.mjs ~line 2165) — otherwise
   // it's treated as a bare fixture run and stays bundle-free. agon_create writes that sibling;
   // the sandbox tools never did, so nothing placed/moved in a sandbox session could ever
-  // reach agon_push_to_ui. This is the fix: agon_sandbox_place now writes a minimal (spec-less —
+  // reach a client. This is the fix: agon_sandbox_place now writes a minimal (spec-less —
   // sandbox sessions have no BuildSpec/cardSet to offer) bundle.json placeholder alongside
   // sim-config.json, which is enough for agon_run's existing detection to pick up unmodified.
   const harness = new McpServerHarness();
@@ -595,7 +595,7 @@ test("mcp agon_sandbox_place does not write artifact files when session validati
   }
 });
 
-test("mcp sandbox_create -> sandbox_place -> agon_run -> agon_push_to_ui: a sandbox-authored scene can actually reach the UI", async () => {
+test("mcp sandbox_create -> sandbox_place -> agon_run: a sandbox-authored scene runs and stitches a bundle a client can load", async () => {
   // The end-to-end point of the bundle.json fix above: agon_sandbox_create's own tool
   // description says "the foundation for Phaser rendering" — this asserts that promise is
   // actually true via the documented MCP tool chain, not just that a file gets written.
@@ -652,23 +652,6 @@ test("mcp sandbox_create -> sandbox_place -> agon_run -> agon_push_to_ui: a sand
     assert.ok(
       resourceBundleArtifact.assets?.some((a) => a?.id === "actor.delver"),
       "actor.delver must be a real, loadable asset entry, not just a mapping key",
-    );
-
-    // callToolRaw, not callTool: agon_push_to_ui can legitimately return ok:false for reasons
-    // unrelated to this test (e.g. SANDBOX_BRIDGE_START_FAILED if another concurrently-
-    // spawned server.mjs already holds port 38487 — an accepted, honestly-reported class of
-    // flakiness under vitest's parallelism, not a bug). What this test actually asserts is
-    // narrower: whatever the outcome, it must not be "no bundle found here."
-    const pushResult = await harness.callToolRaw("agon_push_to_ui", {
-      outDir: runOutDir,
-      targetTab: "gameplay",
-      requireClient: false,
-    });
-    assert.equal(pushResult.command, "push-to-ui");
-    assert.notEqual(
-      pushResult.bundleNotFound,
-      true,
-      `agon_push_to_ui must find the stitched bundle, not report bundleNotFound: ${JSON.stringify(pushResult)}`,
     );
   } finally {
     await harness.close();
