@@ -6,6 +6,7 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 
 ### Added
 
+- `examples/minimal-game/` (#869): the smallest complete game, authoring a level with `authorLevel`, playing it with `createPlaySession` and printing the board, importing only the published entries. The suite runs it. No API change.
 - Player wording as data (#865): every controller sentence has an id in `MESSAGE_IDS` with today's English in `DEFAULT_MESSAGES`; `createGameController({ messages })` overrides templates and `frame().messageData` lists the `{ id, params }` behind `message`. `formatMessage` words one. Data twins `rejectionMessageData`, `battleLinesData`, `allyWarningData`, `vitalChangeData`, `takeRefusalData` sit beside the string functions, whose output is unchanged. Additive.
 - Save and resume (#863): `session.save({ meta })` returns an `agon/PlaySave` (capture, level ids, `ENGINE_VERSION`, state digest, tick, status), and `resumePlaySession({ simConfig, initialState, save })` replays it, throwing `PLAY_SAVE_WRONG_LEVEL` or `PLAY_SAVE_STALE`. The game controller gains `save(meta)` and a `resume` option. `resumePlaySession`, `validatePlaySave`, `PLAY_SAVE_SCHEMA` and `ENGINE_VERSION` are exported on `/client`. Additive.
 - The package installs an `agon` command (`bin`, built with a shebang) and ships a README that says which entry to import (#822). No API change.

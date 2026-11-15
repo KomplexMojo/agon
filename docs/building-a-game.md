@@ -4,6 +4,8 @@ Agon is the engine; a game brings its look, sound, levels and story. This guide 
 Primordial (the first game built on Agon) as the worked example. It describes what exists today; the full list of
 importable modules and the rules for changing them are in [`engine-api.md`](engine-api.md).
 
+A complete runnable version of sections 2 to 4 is in `examples/minimal-game/`.
+
 ## The split
 
 | Agon decides | The game decides |
