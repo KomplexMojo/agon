@@ -21,7 +21,7 @@ Scoped change skill for the **integration and boundary persona**. Load this inst
 
 ## Forbidden
 
-- Importing Orchestrator internals from outside this directory — outside callers use only `controller.js` / `persona.js` / `contracts.ts`.
+- Importing Orchestrator internals from outside this directory — outside callers use only `controller.js` / `persona.js`.
 - Putting planning, config authoring, pricing, or action choice into Orchestrator (or into glue “because it’s convenient”).
 - Executing effects inline — return effects as data; route via `packages/runtime/src/ports/effects.js`.
 - Reading a clock directly or storing non-serializable context (functions, class instances).
@@ -41,7 +41,7 @@ Scoped change skill for the **integration and boundary persona**. Load this inst
 ```bash
 pnpm run test:vitest -- tests/personas/orchestrator/
 pnpm run test:vitest -- tests/architecture/persona-boundary.test.js tests/architecture/orchestrator-prompt-contract-authority.test.js tests/architecture/orchestrator-budget-loop-authority.test.js
-pnpm run typecheck   # if contracts.ts or typed surfaces changed
+pnpm run typecheck   # if typed surfaces changed
 ```
 
 ## Escalate
@@ -51,6 +51,6 @@ Stop and ask when ownership is ambiguous, the fix spans multiple personas, LLM c
 ## Pointers
 
 - README: `packages/runtime/src/personas/orchestrator/README.md`
-- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`, `contracts.ts`
+- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`
 - Charter: `docs/architecture-charter.md` (Persona Model, A1–A5)
 - Effects port: `packages/runtime/src/ports/effects.js`

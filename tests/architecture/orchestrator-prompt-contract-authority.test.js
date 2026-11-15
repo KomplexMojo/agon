@@ -12,7 +12,7 @@
  * Two things make that true today, verified independently rather than assumed:
  *   1. `persona-boundary.test.js` already forbids any importer outside a persona from
  *      reaching a non-public file inside `personas/<name>/` — `prompt-contract.js` is not
- *      in `PUBLIC_BASENAMES` ({controller.js, persona.js, contracts.ts}), so a glue file
+ *      in `PUBLIC_BASENAMES` ({controller.js, persona.js}), so a glue file
  *      importing it directly is already a hard error (allowlist is 0). That guard was
  *      not written for this responsibility, but it already covers it — cited, not
  *      re-derived, and checked directly below as well, because two guards agreeing on

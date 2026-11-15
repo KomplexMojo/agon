@@ -20,7 +20,7 @@ Scoped change skill for the **planning and intent-translation persona**. Load th
 
 ## Forbidden
 
-- Importing Director internals from outside this directory — outside callers use only `controller.js` / `persona.js` / `contracts.ts`.
+- Importing Director internals from outside this directory — outside callers use only `controller.js` / `persona.js`.
 - Performing IO inside Director (LLM calls belong behind Orchestrator + adapters).
 - Assembling or locking SimConfig, inventing prices, or mutating simulation state.
 - Executing effects inline — return effects as data via `packages/runtime/src/ports/effects.js`.
@@ -40,7 +40,7 @@ Scoped change skill for the **planning and intent-translation persona**. Load th
 ```bash
 pnpm run test:vitest -- tests/personas/director/
 pnpm run test:vitest -- tests/architecture/persona-boundary.test.js tests/architecture/persona-authority.test.js
-pnpm run typecheck   # if contracts.ts or typed surfaces changed
+pnpm run typecheck   # if typed surfaces changed
 ```
 
 ## Escalate
@@ -50,6 +50,6 @@ Stop when planning vs configuration ownership is unclear, a new controller API i
 ## Pointers
 
 - README: `packages/runtime/src/personas/director/README.md`
-- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`, `contracts.ts`
+- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`
 - Artifacts: `packages/runtime/src/contracts/artifacts.ts`
 - Charter: `docs/architecture-charter.md`

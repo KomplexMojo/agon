@@ -350,8 +350,7 @@ the consumed input requires removing those write-backs — CR.3's scope, not CR.
 
 ## Architectural Intent
 
-Cross-persona artifacts live in `packages/runtime/src/contracts/artifacts.ts`. Configurator state-machine
-inputs/outputs belong in `packages/runtime/src/personas/configurator/contracts.ts`.
+Cross-persona artifacts live in `packages/runtime/src/contracts/artifacts.ts`; a persona has no contracts file of its own.
 
 This separation ensures that:
 - Scenario setup complexity does not leak into the simulation core.
@@ -603,7 +602,7 @@ and cognition to the spec's motivations, one per family: an explicit kind in one
 must fit or the spec is refused naming both, and a role default that does not fit is replaced.
 
 ## Drift guardrails
-- Canonical source: `controller.js` + `state-machine.js` + `contracts.ts`. The 1-line `.mts` re-export shims were deleted 2026-08-01; consumers import `persona.js` (the controller barrel), not the state machine.
+- Canonical source: `controller.js` + `state-machine.js`. The 1-line `.mts` re-export shims were deleted 2026-08-01; consumers import `persona.js` (the controller barrel), not the state machine.
 - Keep README, contracts, fixtures, and any state-diagram metadata in sync when states/events/subscriptions change.
 - Table-driven persona tests (phase/transition fixtures) are the safety net; turn off `TS_NODE_TRANSPILE_ONLY` in CI to catch signature drift.
 - Entry points are `.js`. There is no `.mts` twin (no `ts-node/esm` required).

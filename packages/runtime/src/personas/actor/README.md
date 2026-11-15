@@ -466,8 +466,7 @@ identical state, actions, effects, and telemetry.
 
 ## Architectural Intent
 
-Cross-persona artifacts live in `packages/runtime/src/contracts/artifacts.ts`. Actor state-machine
-inputs/outputs belong in `packages/runtime/src/personas/actor/contracts.ts`.
+Cross-persona artifacts live in `packages/runtime/src/contracts/artifacts.ts`; a persona has no contracts file of its own.
 
 Persona controllers and state machines are authored as `.js` — that is the only implementation.
 Consumers import `persona.js`, the controller barrel.
@@ -486,7 +485,7 @@ Actors are therefore modeled as **decision-makers layered on top of a determinis
 - Outputs: proposed actions only (data); no IO or simulation mutation.
 
 ## Drift guardrails
-- Canonical source: `controller.js` + `state-machine.js` + `contracts.ts`. The 1-line `.mts` re-export shims were deleted 2026-08-01; consumers import `persona.js` (the controller barrel), not the state machine.
+- Canonical source: `controller.js` + `state-machine.js`. The 1-line `.mts` re-export shims were deleted 2026-08-01; consumers import `persona.js` (the controller barrel), not the state machine.
 - Keep README, contracts, fixtures, and any state-diagram metadata in sync when states/events/subscriptions change.
 - Table-driven persona tests (phase/transition fixtures) are the safety net; turn off `TS_NODE_TRANSPILE_ONLY` in CI to catch signature drift.
 - Entry points are `.js`. There is no `.mts` twin (no `ts-node/esm` required).

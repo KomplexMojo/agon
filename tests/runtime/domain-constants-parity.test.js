@@ -5,7 +5,6 @@ const { resolve } = require("node:path");
 const ROOT = resolve(__dirname, "../..");
 const ARTIFACTS_TS = resolve(ROOT, "packages/runtime/src/contracts/artifacts.ts");
 const ACTOR_TYPES_TS = resolve(ROOT, "packages/core-ts/src/state/actor-types.ts");
-const CONFIGURATOR_CONTRACTS_TS = resolve(ROOT, "packages/runtime/src/personas/configurator/contracts.ts");
 
 function parseStringUnion(sourceText, typeName) {
   const pattern = new RegExp(`export\\s+type\\s+${typeName}\\s*=\\s*([^;]+);`);
@@ -27,23 +26,14 @@ test("affinity and expression type unions stay aligned with shared runtime const
   } = await import("../../packages/runtime/src/contracts/domain-constants.js");
   const artifactsSource = readFileSync(ARTIFACTS_TS, "utf8");
   const actorTypesSource = readFileSync(ACTOR_TYPES_TS, "utf8");
-  const configuratorSource = readFileSync(CONFIGURATOR_CONTRACTS_TS, "utf8");
 
   const affinityKinds = parseStringUnion(actorTypesSource, "AffinityKind");
   const affinityExpressions = parseStringUnion(actorTypesSource, "AffinityExpression");
   const affinityTargetTypes = parseStringUnion(artifactsSource, "AffinityTargetType");
-  const hazardAffinityKinds = parseStringUnion(configuratorSource, "HazardAffinityKind");
-  const hazardAffinityExpressions = parseStringUnion(configuratorSource, "HazardAffinityExpression");
-  const hazardAffinityTargetTypes = parseStringUnion(configuratorSource, "HazardAffinityTargetType");
 
   assert.deepEqual(affinityKinds, Array.from(AFFINITY_KINDS));
   assert.deepEqual(affinityExpressions, Array.from(AFFINITY_EXPRESSIONS));
   assert.deepEqual(affinityTargetTypes, Array.from(AFFINITY_TARGET_TYPES));
-  // The Configurator's hazard kinds are core's AffinityKind, not a second copy of the list.
-  assert.deepEqual(hazardAffinityKinds, []);
-  assert.match(configuratorSource, /export\s+type\s+HazardAffinityKind\s*=\s*AffinityKind;/);
-  assert.deepEqual(hazardAffinityExpressions, Array.from(AFFINITY_EXPRESSIONS));
-  assert.deepEqual(hazardAffinityTargetTypes, Array.from(AFFINITY_TARGET_TYPES));
   AFFINITY_KINDS.forEach((kind) => {
     const opposite = AFFINITY_OPPOSITES[kind];
     assert.ok(AFFINITY_KINDS.includes(opposite), `opposite for ${kind} must be a known affinity`);

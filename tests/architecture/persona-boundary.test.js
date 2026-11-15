@@ -19,7 +19,7 @@ const PERSONAS = new Set([
 const SOURCE_EXTENSIONS = new Set([".js", ".mjs", ".mts", ".ts"]);
 // `controller.mts` is gone: the 1-line .mts shims were deleted 2026-08-01 and every
 // importer now uses the `persona.js` barrel (or `controller.js` from inside the persona).
-const PUBLIC_BASENAMES = new Set(["controller.js", "persona.js", "contracts.ts"]);
+const PUBLIC_BASENAMES = new Set(["controller.js", "persona.js"]);
 const SKIPPED_DIRECTORIES = new Set(["node_modules", "dist"]);
 
 function toRepoPath(path) {

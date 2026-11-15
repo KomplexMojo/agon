@@ -21,7 +21,7 @@ Scoped change skill for the **budgeting and resource-policy persona**. Load this
 
 ## Forbidden
 
-- Importing Allocator internals from outside this directory — outside callers use only `controller.js` / `persona.js` / `contracts.ts`.
+- Importing Allocator internals from outside this directory — outside callers use only `controller.js` / `persona.js`.
 - A second price table anywhere in the tree (including silent `1` fallbacks) — single origin only.
 - Authoring SimConfig or inventing Actor scoring inside Allocator.
 - Mutating simulation state or enforcing action legality (that is `core-ts`).
@@ -41,7 +41,7 @@ Scoped change skill for the **budgeting and resource-policy persona**. Load this
 ```bash
 pnpm run test:vitest -- tests/personas/allocator/
 pnpm run test:vitest -- tests/architecture/pricing-authority.test.js tests/architecture/single-origin.test.js tests/architecture/allocator-base-costs-authority.test.js tests/architecture/allocator-receipt-authority.test.js
-pnpm run typecheck   # if contracts.ts or typed surfaces changed
+pnpm run typecheck   # if typed surfaces changed
 ```
 
 ## Escalate
@@ -51,6 +51,6 @@ Stop when a new cost domain appears outside Allocator, receipt gating moves into
 ## Pointers
 
 - README: `packages/runtime/src/personas/allocator/README.md`
-- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`, `contracts.ts`
+- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`
 - Charter pricing rules: `docs/architecture-charter.md`
 - Effects port: `packages/runtime/src/ports/effects.js`
