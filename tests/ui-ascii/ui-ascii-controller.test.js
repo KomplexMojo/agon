@@ -16,7 +16,9 @@ test("the battle log keeps cast-path and sprint how-to out of the message band",
   const screen = readFileSync(join(SRC, "screen.js"), "utf8");
   // the controller moved to runtime (#505); the message copy lives there now
   const game = readFileSync(join(SRC, "game.js"), "utf8")
-    + readFileSync(join(SRC, "../../runtime/src/controls/game-controller.js"), "utf8");
+    + readFileSync(join(SRC, "../../runtime/src/controls/game-controller.js"), "utf8")
+    // #865: the controller's sentences are catalogued now
+    + readFileSync(join(SRC, "../../runtime/src/controls/message-catalogue.js"), "utf8");
   assert.doesNotMatch(screen, /function castPathLine/);
   assert.doesNotMatch(screen, /mark where the last cast went/);
   assert.doesNotMatch(game, /your next move takes two tiles, for more stamina/);
