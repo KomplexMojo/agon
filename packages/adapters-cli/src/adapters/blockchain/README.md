@@ -10,6 +10,8 @@ This adapter:
 - Provides a minimal JSON-RPC client.
 - Exposes `getBalance`, `getChainId`, `mintCard`, and `loadMintedCard` helpers.
 
+`getBalance` and `getChainId` are real Ethereum JSON-RPC. `mintCard` and `loadMintedCard` are **fixture-only**: live, they call `agon_mintCard` / `agon_getMintedCard`, which no node answers ("method not found"). Real minting is phase 3 of #835 (`eth_call` for ownership, signed `eth_sendRawTransaction` with signing outside the engine); see #836.
+
 It is intended for Orchestrator/Allocator tooling and never used inside `core-ts`.
 
 ## Usage

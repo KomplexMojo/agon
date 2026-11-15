@@ -104,7 +104,7 @@ export const externalTools = [
   }),
   createTool({
     name: "agon_blockchain_mint",
-    description: "Mint a card through the blockchain adapter.",
+    description: "Mint a card through the blockchain adapter (fixture-only today, #836).",
     command: "blockchain-mint",
     inputSchema: {
       required: ["rpcUrl", "card"],
@@ -132,7 +132,7 @@ export const externalTools = [
   }),
   createTool({
     name: "agon_blockchain_load",
-    description: "Load a minted card through the blockchain adapter.",
+    description: "Load a minted card through the blockchain adapter (fixture-only today, #836).",
     command: "blockchain-load",
     inputSchema: {
       required: ["rpcUrl", "tokenId"],

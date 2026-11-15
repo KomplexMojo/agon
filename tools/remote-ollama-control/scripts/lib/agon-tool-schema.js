@@ -22,7 +22,7 @@ const VITAL_CONFIG = {
   type: 'object',
   properties: {
     max: { type: 'integer', minimum: 1, description: 'Maximum value' },
-    regen: { type: 'integer', minimum: 0, description: 'Regen per tick (default 0)' }
+    regen: { type: 'integer', minimum: 0, description: 'Regen per tick. If omitted, an actor that moves gets the movement floor (stamina regen); otherwise 0' }
   },
   required: ['max']
 };
