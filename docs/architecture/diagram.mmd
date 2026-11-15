@@ -16,7 +16,6 @@ flowchart LR
     CommandKernel["shared command kernel"]
     CardAuthoring["card-authoring commands\nnormalize cards + apply properties"]
     RuntimePorts["runtime runner + ports\ncore-owned EffectKind; fail-loud mapping"]
-    AdaptiveRunner["adaptive-workflow control plane\nrunAdaptiveWorkflow + injected ports"]
     CoreFacade["core-facade + core-setup\npreview/playback helpers"]
     PlaySession["play-session\nact / view / status; one command = one tick"]
     RunViewer["run-viewer\na recorded run's tick, in play-session's view shape"]
@@ -71,7 +70,6 @@ flowchart LR
   RunViewer --> PlaySession
   CLI --> ACli
   MCP --> ACli
-  ACli -- "agon workflow / agon_workflow_*\nmodel + store + exec ports" --> AdaptiveRunner
   MCP -- "agon_push_to_ui\nGameplayBundle" --> BridgeServer
   BridgeServer -- "WebSocket (a game client connects)" --> GameClients
   AWeb --> CommandKernel

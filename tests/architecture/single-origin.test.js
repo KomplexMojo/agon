@@ -85,9 +85,8 @@ const SHARED_VOCABULARY_DECLARATION = new RegExp(
 //   UNUSED_CLOCK                  the persona is a namespace for a pure function and its
 //                                 meta is discarded (guidance-level-builder, price lists).
 //
-// RESIDUE, deliberately out of scope: 7 non-persona sites (ports/solver.js,
-// contracts/schema-catalog.js, runner/runtime-fsm.mjs, adaptive-workflow/{metrics,
-// state-machine ×3}.js, render/visualization-snapshot.js). PX.3 is a PERSONA rule; an
+// RESIDUE, deliberately out of scope: non-persona sites (ports/solver.js,
+// contracts/schema-catalog.js, runner/runtime-fsm.mjs, render/visualization-snapshot.js). PX.3 is a PERSONA rule; an
 // ADAPTER reading the wall clock is correct behaviour, not a defect — someone has to know
 // what "now" means, and the charter's answer is "not a persona". Widening this guard to all
 // of `packages` would fire on exactly the code that is supposed to do it.
@@ -104,7 +103,7 @@ const PERSONA_CLOCK_DEFAULT = /new Date\(/g;
 // reports clean while the defect lives next door. Same shape as the price guard stopping at
 // the runtime package boundary one milestone earlier.
 //
-// The residue is now non-persona code (ports, contracts, runner, adaptive-workflow, render),
+// The residue is now non-persona code (ports, contracts, runner, render),
 // which is deliberately out of scope: PX.3 is a PERSONA rule — "a persona never reads the
 // wall clock" — and an adapter reading it is correct, not a defect. That is why the scope is
 // the personas directory rather than all of `packages`.

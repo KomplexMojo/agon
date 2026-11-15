@@ -47,7 +47,6 @@ Use the CLI directly when you want:
 | External adapters | `agon_ipfs`, `agon_ipfs_publish`, `agon_ipfs_load`, `agon_blockchain`, `agon_blockchain_mint`, `agon_blockchain_load` | Adapter response artifacts |
 | Sandbox / interactive | `agon_sandbox_create`, `agon_sandbox_place`, `agon_sandbox_move`, `agon_push_to_ui`, `agon_show_state`, `agon_tick_forward`, `agon_tick_backward`, `agon_play_ascii`, `agon_play_start`, `agon_play_act`, `agon_play_view`, `agon_play_switch`, `agon_play_order`, `agon_play_advance`, `agon_play_tick`, `agon_play_end` | Sandbox session, action sequence, tick/ASCII/image state, the terminal UI board |
 | Test authoring | `agon_test_list_suites`, `agon_test_discover_patterns`, `agon_test_plan_from_change`, `agon_test_run`, `agon_test_scaffold_case`, `agon_test_insert_case`, `agon_test_explain_failure`, `agon_test_lint_structure` | Inventory summaries, scaffolded test files, run results |
-| Workflow | `agon_workflow_run`, `agon_workflow_status`, `agon_workflow_replay`, `agon_workflow_cancel`, `agon_workflow_validate` | Durable AdaptiveWorkflowAgent run state |
 
 The most common agent loop is: `agon_create` or `agon_llm_plan` -> `agon_run` -> `agon_show`/`agon_inspect` -> `agon_narrate` or `agon_diff`.
 
@@ -299,11 +298,6 @@ The MCP server stays the same. Only LLM-backed tools such as `agon_llm`, `agon_o
 | agon_test_insert_case | Test Authoring | Append a scaffolded case to an existing test file. | recipe, targetFile, title, (recipe-specific fields) |
 | agon_test_explain_failure | Test Authoring | Classify a test failure from runner output into migration-focused categories. | text |
 | agon_test_lint_structure | Test Authoring | Report structural migration gaps: uncategorized recipes and codemod exceptions. | none |
-| agon_workflow_run | Workflow | Run AdaptiveWorkflowAgent through the controlled CLI adapter. | input or objective, policy, runtimeProfile, model, maxModelAttempts |
-| agon_workflow_status | Workflow | Read durable workflow status. | outDir or runId |
-| agon_workflow_replay | Workflow | Replay a workflow run from recorded model content without live IO. | outDir or runId |
-| agon_workflow_cancel | Workflow | Request cancellation through durable workflow state. | outDir or runId, reason |
-| agon_workflow_validate | Workflow | Validate workflow input without model or execution calls. | input or objective, policy, runtimeProfile, model, maxModelAttempts |
 
 ## Tool Groups
 
@@ -1968,148 +1962,6 @@ Expected output shape:
   "scaffoldableRecipes": []
 }
 ```
-
-### Workflow
-
-Purpose: run and manage `AdaptiveWorkflowAgent` through the controlled CLI adapter, and read/replay/cancel its durable run state. Every `agon_workflow_*` tool maps to the `workflow <action>` CLI command; `status`/`replay`/`cancel` require either `outDir` or `runId` (a remembered workflow run id resolves to its outDir automatically).
-
-#### `agon_workflow_run`
-
-Runs `AdaptiveWorkflowAgent`. Requires exactly one of `input` or `objective`.
-
-Schema:
-
-| Parameter | Type | Required | Notes |
-| --- | --- | --- | --- |
-| input | string | one of input/objective | AdaptiveWorkflowCliRunInput fixture path |
-| objective | string | one of input/objective | Workflow objective |
-| policy | string | no | Strategy policy path |
-| runtimeProfile | string | no | Runtime profile path |
-| model | string | no | Model override |
-| maxModelAttempts | integer | no | Bounded model attempts, minimum 1 |
-| outDir | string | no | Durable run directory; MCP temp storage used when omitted |
-| runId | string | no | Run id |
-| createdAt | string | no | ISO-8601 timestamp |
-
-Example call:
-
-```json
-{
-  "objective": "Plan a small fire dungeon.",
-  "outDir": "/tmp/agon/workflow"
-}
-```
-
-Expected output shape:
-
-```json
-{
-  "ok": true,
-  "command": "workflow",
-  "action": "run",
-  "runId": "run_xxx",
-  "outDir": "/tmp/agon/workflow"
-}
-```
-
-#### `agon_workflow_status` / `agon_workflow_replay`
-
-Read durable workflow status, or replay a run from recorded model content without live IO. Requires `outDir` or `runId`.
-
-Schema:
-
-| Parameter | Type | Required |
-| --- | --- | --- |
-| outDir | string | one of outDir/runId |
-| runId | string | one of outDir/runId |
-
-Expected output shape:
-
-```json
-{
-  "ok": true,
-  "command": "workflow",
-  "action": "status",
-  "outDir": "/tmp/agon/workflow",
-  "status": "completed"
-}
-```
-
-#### `agon_workflow_cancel`
-
-Requests cancellation through durable workflow state. Requires `outDir` or `runId`.
-
-Schema:
-
-| Parameter | Type | Required |
-| --- | --- | --- |
-| outDir | string | one of outDir/runId |
-| runId | string | one of outDir/runId |
-| reason | string | no |
-
-Expected output shape:
-
-```json
-{
-  "ok": true,
-  "command": "workflow",
-  "action": "cancel",
-  "outDir": "/tmp/agon/workflow",
-  "cancelled": true
-}
-```
-
-#### `agon_workflow_validate`
-
-Validates workflow input without making model or execution calls. Same schema as `agon_workflow_run`.
-
-Expected output shape:
-
-```json
-{
-  "ok": true,
-  "command": "workflow",
-  "action": "validate",
-  "valid": true
-}
-```
-
-## Artifact Output
-
-Artifact-producing tools generally return this canonical shape:
-
-```json
-{
-  "ok": true,
-  "command": "create",
-  "runId": "run_abc123",
-  "outDir": "/absolute/path/to/artifacts/runs/run_abc123/create",
-  "artifactPaths": {
-    "spec": "/absolute/path/to/spec.json",
-    "manifest": "/absolute/path/to/manifest.json"
-  }
-}
-```
-
-Field meanings:
-
-| Field | Type | Meaning |
-| --- | --- | --- |
-| ok | boolean | Command succeeded |
-| command | string | Underlying CLI command name |
-| runId | string | Run id associated with the artifact set |
-| outDir | string | Output directory written by the command |
-| artifactPaths | object | Named paths for produced artifacts |
-
-Important nuances:
-
-- The MCP wrapper always returns structured JSON in `structuredContent`.
-- If the CLI emits a JSON object, the MCP server forwards it directly.
-- If the CLI emits plain text only, the server wraps it as `{ ok, command, stdout }`.
-- Query-style tools such as `agon_show`, `agon_diff`, and `agon_runs_list` return command-specific summary objects rather than a uniform `artifactPaths` map.
-- When stderr exists and the JSON payload does not already include `stderr`, the MCP server adds it.
-
-## Configuration
 
 ### Defaults
 

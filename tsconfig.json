@@ -24,7 +24,7 @@
   },
   "include": [
     // Broadened alongside allowJs: the previous list covered only personas/, core-ts/ and
-    // contracts/, leaving runner/, build/, commands/, ports/, adaptive-workflow/, render/
+    // contracts/, leaving runner/, build/, commands/, ports/, render/
     // and every adapter package outside the program.
     "packages/*/src/**/*",
     "tests/**/*",

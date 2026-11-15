@@ -7,12 +7,12 @@ Classifies every area of this repo as **stays** (framework, public), **moves** (
 | Area | Notes |
 |---|---|
 | `packages/core-ts` | Pure logic. Its affinity table (`rules/actor-affinity.ts`, `state/affinity.ts`) is content-flavoured: see seams. |
-| `packages/runtime/src/{personas,ports,contracts,runner,commands,build,adaptive-workflow}` | Persona FSMs, effects, artifact schemas, tick orchestration. |
+| `packages/runtime/src/{personas,ports,contracts,runner,commands,build}` | Persona FSMs, effects, artifact schemas, tick orchestration. |
 | `packages/adapters-{cli,test,web}` | `agon`, MCP server, test doubles, browser IO. |
 | `tests/{core-ts,personas,runtime,contracts,architecture,adapters-*,bindings,simulations,integration,llm-suitability,tools,scripts,helpers,fixtures}` | ~1,000 files. The sim suite and `sim:sweep` stay here as framework regression. |
-| `tools/` (benchmarks, remote-ollama-control, adaptive-workflow-benchmark) | Framework/LLM tooling. |
+| `tools/` (benchmarks, remote-ollama-control) | Framework/LLM tooling. |
 | `scripts/{setup,testing,affinity,cli-*.sh,*.mjs benchmarks}`, `.githooks`, `.claude/skills` | Framework dev tooling. |
-| `docs/{architecture-charter,vision-contract,architecture/,cli-runbook,runtime-inputs,adaptive-workflow,...}` | Framework law and runbooks. |
+| `docs/{architecture-charter,vision-contract,architecture/,cli-runbook,runtime-inputs,...}` | Framework law and runbooks. |
 | `.github/workflows/{claude,claude-code-review,benchmark-heartbeat-alarm}.yml` | Repo automation. |
 
 ## Moves to Primordial (game)

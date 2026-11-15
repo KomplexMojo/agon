@@ -1,7 +1,7 @@
 // A failed model request names the server's reason, not just the status (a failed model load and a
 // bad request are both a 500 from Ollama; only the body tells them apart).
 import { expect, test } from "vitest";
-import { postJson } from "../../packages/adapters-cli/src/adapters/model/shared.js";
+import { postJson } from "../../packages/adapters-cli/src/adapters/llm/index.js";
 
 test("postJson puts the response body in the error message", async () => {
   const fetchFn = async () => ({ ok: false, status: 500, statusText: "Internal Server Error", text: async () => '{"error":"model failed to load"}' });

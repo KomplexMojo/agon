@@ -9,6 +9,10 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 - The package installs an `agon` command (`bin`, built with a shebang) and ships a README that says which entry to import (#822). No API change.
 - `@agon-engine/engine/authoring/browser` (#846): `authorLevel`, the character sheet and the recorded solver adapter with no Node builtin in the import graph, so a browser bundle can import them. `/authoring` is unchanged and still adds the playtest catalogue, which a Node build script uses. Additive; a test bundles the entry for a browser and fails on any `node:` import.
 
+### Removed
+
+- `agon workflow` and the `agon_workflow_*` MCP tools (and the MCP resources they served), with the whole `AdaptiveWorkflowAgent` control plane, its artifact schemas, model-provider adapters and benchmark tool (#870). Nothing in play, authoring or the public engine entries used them. `agon llm` is unchanged.
+
 ## 0.5.1
 
 ### Added
