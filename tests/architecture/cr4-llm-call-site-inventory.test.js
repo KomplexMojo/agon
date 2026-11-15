@@ -40,7 +40,7 @@ const EXPECTED = Object.freeze({
   "packages/runtime/src/commands/kernel.js": { runLlmSession: 0, runLlmBudgetLoop: 1 },
   // M5a migrated every DIRECT runLlmSession site to commands/llm-host.js. What is left
   // in these is the budget loop, which cannot move until the loop is inverted.
-  "packages/adapters-cli/src/cli/agon-impl.mjs": { runLlmSession: 0, runLlmBudgetLoop: 1 },
+  "packages/adapters-cli/src/cli/commands/scenario.mjs": { runLlmSession: 0, runLlmBudgetLoop: 1 },
   // NOTE: `personas/orchestrator/llm-budget-loop.js` is deliberately ABSENT. Until M5b it
   // held 2 internal runLlmSession calls — the caller no revision of CR.4 recorded before
   // 2026-08-07, and the reason the inversion is two-layer. Stage 1 replaced them with an

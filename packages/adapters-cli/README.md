@@ -112,6 +112,11 @@ Director to `decide` alone). Working fixtures for all seven live in
 
 ## CLI Commands
 
+Where the code lives (#862): `src/cli/agon-impl.mjs` holds only the `COMMANDS` table, `executeCommand` and
+`main`; each command family has a file under `src/cli/commands/` (`build`, `run`, `authoring`, `plans`, `llm`,
+`external`, `sandbox`, `inspection`, `scenario`, `play`), with helpers two families share in `shared.mjs`,
+`authoring-shared.mjs` and `run-shared.mjs`.
+
 Default output layout: `artifacts/runs/<runId>/<command>`. Older layouts
 (`artifacts/build_<runId>`, `artifacts/<command>_<timestamp>`) can be preserved
 by passing `--out-dir`.
