@@ -37,7 +37,7 @@ const EXPECTED = Object.freeze({
   // M4b MIGRATED kernel's 2 runLlmSession sites to `commands/llm-host.js`, which drives
   // the Orchestrator round and dispatches its effects. The runLlmBudgetLoop site remains:
   // it cannot move until the loop itself is inverted, because the loop WRAPS the session.
-  "packages/runtime/src/commands/kernel.js": { runLlmSession: 0, runLlmBudgetLoop: 1 },
+  "packages/runtime/src/commands/kernel/llm-plan.js": { runLlmSession: 0, runLlmBudgetLoop: 1 },
   // M5a migrated every DIRECT runLlmSession site to commands/llm-host.js. What is left
   // in these is the budget loop, which cannot move until the loop is inverted.
   "packages/adapters-cli/src/cli/commands/scenario.mjs": { runLlmSession: 0, runLlmBudgetLoop: 1 },
