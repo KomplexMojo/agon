@@ -26,7 +26,7 @@ export const RECIPE_CATALOG = {
   },
   ui_cli_equivalence: {
     runner: "vitest",
-    // Not scaffoldable: the browser-host half (adapters-web cli-worker) was removed (#859), so
+    // Not scaffoldable: the browser-host half (the browser CLI worker) was removed (#859), so
     // there is nothing left for a generated test to compare the CLI against.
     scaffoldable: false,
     description: "Browser-host and CLI artifact flows remain equivalent.",

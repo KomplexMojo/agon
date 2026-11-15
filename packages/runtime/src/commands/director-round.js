@@ -31,7 +31,7 @@ import { INTENT_ENVELOPE_SCHEMA } from "../contracts/artifacts.ts";
  * opener refused inputs the assembler accepts, and routing `ui-flow.js` and `agon-impl.mjs`
  * through the persona would have THROWN where they work today —
  * `ui-web/card-builder-controller.js` passes a live clock with `createdAt: undefined`, and
- * `cli-worker/shared.js` forwards an opaque payload. The two allowlist rows were blocked on
+ * a browser host forwarded an opaque payload. The two allowlist rows were blocked on
  * this disagreement, not on effort.
  *
  * ⚠️ **THE CLOCK IS READ ONCE AND THE ROUND IS FROZEN TO THAT INSTANT.** Handing the live

@@ -131,7 +131,7 @@ export function normalizeBuildSpecForUi(specInput) {
  * ⚠️ `director` IS THREADED IN WHEN THE CALLER ALREADY HAS ONE. `runPoolFlow` below opens a
  * round for `mapPool`/`enforceBudget` and hands it here; opening a second round for the same
  * build is the defect the gate exists to catch, not a convenience. Callers with no round —
- * `ui-web/card-builder-controller.js` and the cli-worker — get one opened for them.
+ * game clients such as the card builder — get one opened for them.
  *
  * ⚠️ `roomGeometry` STAYS EXPLICIT. `beginDirectorRound` builds a Director with no
  * Configurator injected, so the persona's own `roomGeometry()` answers `undefined`, and a
