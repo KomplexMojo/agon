@@ -2,7 +2,7 @@
 // Harvests non-success attempts from a reference content-gen benchmark run's raw `runs.jsonl`
 // into a deterministic, deduplicated regression corpus under tests/fixtures/benchmark-failures/.
 //
-// See coding-issues-affecting-benchmarking.md -> M0 for why: the raw log is a 14-hour,
+// See docs/history/coding-issues-affecting-benchmarking.md -> M0 for why: the raw log is a 14-hour,
 // non-deterministic signal; this turns it into a sub-second one. The raw `runs.jsonl` lives only
 // on the benchmark box (plan §"Where the evidence lives") and is never committed -- this script,
 // its input path, and its output are the audit trail for how the committed fixtures were derived.

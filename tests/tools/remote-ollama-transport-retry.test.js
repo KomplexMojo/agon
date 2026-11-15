@@ -1,4 +1,4 @@
-// M5 (coding-issues-affecting-benchmarking.md): a transport-level failure -- Ollama itself answers
+// M5 (docs/history/coding-issues-affecting-benchmarking.md): a transport-level failure -- Ollama itself answers
 // with an HTTP error status, its own tool-call parser choking on one generation -- is a bad sample,
 // not a broken rig. It gets one retry before the attempt gives up. A network-level failure (no
 // response at all: connection refused, DNS, timeout) never gets a statusCode and is never retried --

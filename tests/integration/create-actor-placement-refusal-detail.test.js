@@ -1,4 +1,4 @@
-// SM2 (error-message-quality-sweep.md): the M4 placement-detail fix (hazard/resource placement
+// SM2 (docs/history/error-message-quality-sweep.md): the M4 placement-detail fix (hazard/resource placement
 // reporting candidates/requested/index) never propagated to actor placement, which had its own
 // near-duplicate "could not place actors: ..." family in orchestrate-build.js reporting nothing.
 // Fixed 11 sites across normalizeActorPositions and its Legacy sibling; two are reproduced here

@@ -204,7 +204,7 @@ test("i4 floorTile count below one room interior is rejected with a structured m
 
   assert.equal(result.ok, false, "count=10 should still be below the minimum viable three-room carve budget");
   assert.match(result.error, /floor_tile_budget_insufficient/, "current rejection path should stay structured");
-  // M4 (coding-issues-affecting-benchmarking.md): the underlying detail (target/required/roomCount)
+  // M4 (docs/history/coding-issues-affecting-benchmarking.md): the underlying detail (target/required/roomCount)
   // was always computed but silently dropped when the caller formatted the thrown Error — every
   // benchmark floor-tile-budget failure was diagnosable only by replaying the request, not by
   // reading its own error. Pin that the numbers now reach the message.

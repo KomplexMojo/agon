@@ -10,7 +10,7 @@
 //                code.
 //   (default)    `agon create` (real artifacts) + `agon run --ticks <N> --seed <N>` per scenario that
 //                created successfully. Reaches the layer where the real bugs this matrix has found
-//                so far actually live (see mcp-harness-run-through.md, "Configuration-permutation
+//                so far actually live (see docs/history/mcp-harness-run-through.md, "Configuration-permutation
 //                sweep").
 //
 // Usage:
@@ -19,12 +19,12 @@
 // acceptedActions/emittedEffects counts are recorded as INFORMATIONAL metadata only, never as a
 // pass/fail signal — treating "an actor did nothing" as itself suspect is exactly the
 // false-positive this matrix's own history already hit once (issue #146, closed: the actor had in
-// fact acted correctly — see mcp-harness-run-through.md finding 5). This sweep looks for crashes
+// fact acted correctly — see docs/history/mcp-harness-run-through.md finding 5). This sweep looks for crashes
 // and malformed output, not for "did the actor do something the axis under test doesn't actually
 // motivate it to do."
 //
 // Step-level assertions (added after the sweep's first coverage review — see
-// mcp-harness-run-through.md, "Testing depth"): the whole-run classification above only asks
+// docs/history/mcp-harness-run-through.md, "Testing depth"): the whole-run classification above only asks
 // "did the run complete." It cannot see a defect present at tick 2 and gone by tick 5 — which is
 // exactly the shape #147 was (every tick individually wrong, in a way no aggregate summary would
 // ever flag). stepLevelCheck() replays acceptedActions cumulatively tick-by-tick against
@@ -36,7 +36,7 @@
 // of files the `run` step already writes, so it costs nothing extra at 50-scenario scale.
 //
 // Determinism/reproducibility check (added investigating whether hazard interaction could be
-// tested this way — see mcp-harness-run-through.md, "Hazard interaction — what this sweep found").
+// tested this way — see docs/history/mcp-harness-run-through.md, "Hazard interaction — what this sweep found").
 // Hazards authored via agon_create/agon_run turned out to be wired through a static affinity FIELD
 // (core.armStaticHazardAt / computeStaticHazardAffinityField) that feeds an actor's OBSERVATION —
 // internal to core-ts, never written to any file this sweep reads, so its exact effect isn't

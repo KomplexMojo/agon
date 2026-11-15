@@ -2,24 +2,10 @@
   "name": "agon",
   "version": "0.0.0",
   "description": "Agon, a deterministic Ports & Adapters simulation engine where players and AI agents contest under one rule set.",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
   "scripts": {
     "test": "node scripts/testing/run-vitest.mjs",
-    "test:legacy": "node --test \"tests/**/*.test.js\"",
-    "test:inventory": "node scripts/testing/inventory-tests.mjs",
-    "test:classify": "node scripts/testing/classify-tests.mjs",
-    "test:coverage": "node scripts/testing/check-runner-coverage.mjs",
     "test:recipe-adoption": "node scripts/testing/check-test-recipe-adoption.mjs",
-    "test:parity": "node scripts/testing/compare-old-vs-new-results.mjs",
-    "test:codemod:report": "node scripts/testing/report-codemod-exceptions.mjs",
-    "test:codemod:node-test": "node scripts/testing/codemod-node-test-to-vitest.mjs",
-    "test:codemod:imports": "node scripts/testing/codemod-test-imports.mjs",
-    "test:codemod:assert": "node scripts/testing/codemod-assert-helpers.mjs",
     "test:vitest": "node scripts/testing/run-vitest.mjs",
-    "test:matrix": "node scripts/testing/test-matrix.mjs",
     "test:coverage:core-ts": "node scripts/testing/run-core-ts-coverage.mjs",
     "typecheck": "tsc -p tsconfig.typecheck.json",
     "typecheck:report": "node scripts/testing/typecheck-report.mjs",
@@ -33,7 +19,6 @@
     "play:web": "node packages/ui-ascii/src/cli.mjs --web",
     "levels:ascii": "node scripts/ui-ascii/generate-levels.mjs",
     "mcp:serve": "node packages/adapters-cli/src/mcp/server.mjs",
-    "docs:pdf": "mmdc -i WORKFLOW.md -o WORKFLOW-print.md --outputFormat svg && md-to-pdf WORKFLOW-print.md && rm -f WORKFLOW-print.md mermaid-*.svg",
     "build:engine": "node scripts/build/engine-bundle.mjs"
   },
   "keywords": [],
@@ -44,12 +29,9 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@mermaid-js/mermaid-cli": "^11.12.0",
     "@types/node": "^25.0.3",
     "@vitest/coverage-v8": "^3.2.4",
     "esbuild": "0.25.12",
-    "md-to-pdf": "^5.2.5",
-    "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   }
