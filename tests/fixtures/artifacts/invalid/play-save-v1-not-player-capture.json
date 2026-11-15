@@ -1,0 +1,60 @@
+{
+  "schema": "agon/PlaySave",
+  "schemaVersion": 1,
+  "meta": {
+    "producedBy": "play-session",
+    "id": "play_save_fixture",
+    "runId": "run_play_save_fixture",
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  },
+  "engineVersion": "0.5.1",
+  "level": {
+    "simConfigId": "first-steps_sim_config",
+    "initialStateId": "first-steps_initial_state",
+    "seed": 0
+  },
+  "stateDigest": "6e81467b",
+  "tick": 2,
+  "status": {
+    "exited": false,
+    "atExit": false,
+    "defeated": false
+  },
+  "capture": {
+    "schema": "agon/CapturedInputArtifact",
+    "schemaVersion": 1,
+    "meta": {
+      "producedBy": "play-session",
+      "id": "play_save_fixture",
+      "runId": "run_play_save_fixture",
+      "createdAt": "2026-11-15T00:00:00.000Z"
+    },
+    "source": {
+      "adapter": "llm"
+    },
+    "contentType": "application/json",
+    "payload": {
+      "playerActorId": "card_delver_1-1",
+      "activeActorId": "card_delver_1-1",
+      "commands": [
+        {
+          "tick": 1,
+          "actorId": "card_delver_1-1",
+          "command": {
+            "kind": "wait"
+          }
+        },
+        {
+          "tick": 2,
+          "actorId": "card_delver_1-1",
+          "command": {
+            "kind": "move",
+            "params": {
+              "direction": "east"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

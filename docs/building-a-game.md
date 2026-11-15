@@ -65,6 +65,24 @@ or rejected, and sound and animation cues for the turn. `session.status()` says 
 going. `captureInput()` records the commands, and `replayPlaySession` re-simulates them, which is how a run is
 verified or shared.
 
+### Save and resume
+
+`session.save({ meta })` returns an `agon/PlaySave`: the capture plus the level it belongs to, the engine version
+(`ENGINE_VERSION`) and a digest of the state it reached. Store it however your game likes. To continue:
+
+```js
+import { resumePlaySession } from "@agon-engine/engine/client";
+
+const session = await resumePlaySession({ simConfig, initialState, save });
+```
+
+Resume replays the commands through the same tick loop, so there is no second way to build state. It throws an
+error with `code` `PLAY_SAVE_WRONG_LEVEL` when the save is for another level, and `PLAY_SAVE_STALE` when this
+engine's rules no longer reproduce the saved state (the message names both engine versions). A newer engine that
+still reproduces the state resumes normally. `validatePlaySave` checks a save's shape without running it. The game
+controller has `save(meta)` and a `resume: { levelIndex, save }` option that starts the level fresh, with a message,
+when the save is stale.
+
 ## 4. Draw it
 
 Agon never draws. `view()` and `buildBoardDrawModel` return data: what is on each cell, what the player can see, what

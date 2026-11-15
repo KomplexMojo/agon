@@ -6,6 +6,7 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 
 ### Added
 
+- Save and resume (#863): `session.save({ meta })` returns an `agon/PlaySave` (capture, level ids, `ENGINE_VERSION`, state digest, tick, status), and `resumePlaySession({ simConfig, initialState, save })` replays it, throwing `PLAY_SAVE_WRONG_LEVEL` or `PLAY_SAVE_STALE`. The game controller gains `save(meta)` and a `resume` option. `resumePlaySession`, `validatePlaySave`, `PLAY_SAVE_SCHEMA` and `ENGINE_VERSION` are exported on `/client`. Additive.
 - The package installs an `agon` command (`bin`, built with a shebang) and ships a README that says which entry to import (#822). No API change.
 - `@agon-engine/engine/authoring/browser` (#846): `authorLevel`, the character sheet and the recorded solver adapter with no Node builtin in the import graph, so a browser bundle can import them. `/authoring` is unchanged and still adds the playtest catalogue, which a Node build script uses. Additive; a test bundles the entry for a browser and fails on any `node:` import.
 

@@ -20,6 +20,7 @@ import {
   RUNTIME_BUDGET_RECEIPT_SCHEMA,
   BUILD_SPEC_SCHEMA,
   CAPTURED_INPUT_SCHEMA,
+  PLAY_SAVE_SCHEMA,
   CONFIGURATION_CANDIDATE_SCHEMA,
   EFFECT_SCHEMA,
   EXECUTION_POLICY_SCHEMA,
@@ -98,7 +99,7 @@ export const SCHEMA_KINDS = Object.freeze({
 });
 
 export const SCHEMA_KIND_BY_SCHEMA = Object.freeze({
-  // ── persisted artifacts (30) ───────────────────────────────────────────────
+  // ── persisted artifacts (31) ───────────────────────────────────────────────
   [ACTOR_LOADOUT_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
   [AFFINITY_PRESET_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
   [AFFINITY_SUMMARY_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
@@ -108,6 +109,7 @@ export const SCHEMA_KIND_BY_SCHEMA = Object.freeze({
   [BUDGET_RECEIPT_ARTIFACT_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
   [RUNTIME_BUDGET_RECEIPT_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
   [CAPTURED_INPUT_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
+  [PLAY_SAVE_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
   [HAZARD_ARTIFACT_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
   [INITIAL_STATE_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
   [INTENT_ENVELOPE_SCHEMA]: SCHEMA_KINDS.PERSISTED_ARTIFACT,
@@ -203,6 +205,13 @@ const CATALOG = [
     category: SCHEMA_CATEGORIES.SUPPORTING_INPUT,
     description: "Captured external adapter payload inputs.",
     fields: ["meta", "source", "contentType", "payload", "payloadRef"],
+  },
+  {
+    schema: PLAY_SAVE_SCHEMA,
+    schemaVersion: 1,
+    category: SCHEMA_CATEGORIES.SUPPORTING_INPUT,
+    description: "A saved play run: a player capture with its level, engine version and state digest (#863).",
+    fields: ["meta", "engineVersion", "level", "stateDigest", "tick", "status", "capture", "levelIndex"],
   },
   {
     schema: BUILD_SPEC_SCHEMA,
