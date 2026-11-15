@@ -9,7 +9,8 @@ import { INTENT } from "./intents.js";
 import { affinityRole } from "../render/affinity-role.js";
 import { AFFINITY_COLOR_HEX } from "../render/affinity-palette.js";
 import { WINDOW_DEFAULT } from "../render/window-size.js";
-import { LEVELS, affinityLabel, aimLabel, allyWarningLines, battleLines, castable, currentMana, equippedKeys, keyLabel, lootLabel, orderChoices, rejectionMessage, runningLevel, takeRefusal, targetsInSight, vitalChangeLine } from "./messages.js";
+import { LEVELS, affinityLabel, allyWarningData, battleLinesData, castable, currentMana, equippedKeys, lootLabel, orderChoices, rejectionMessageData, runningLevel, takeRefusalData, targetsInSight, vitalChangeData } from "./messages.js";
+import { DEFAULT_MESSAGES, formatMessage, msg } from "./message-catalogue.js";
 
 /**
  * @param {object} args
@@ -19,7 +20,7 @@ import { LEVELS, affinityLabel, aimLabel, allyWarningLines, battleLines, castabl
  * @param {boolean} [args.fog] fog of war: you see only what is in sight (default on)
  * @param {boolean} [args.showHelp] start with the key help shown (default)
  */
-export async function createGameController({ levels, startIndex = 0, createSession = createPlaySession, fog = true, showHelp: initialHelp = true, glyphSet = "unicode", window: initialWindow = WINDOW_DEFAULT, resume = null } = {}) {
+export async function createGameController({ levels, startIndex = 0, createSession = createPlaySession, fog = true, showHelp: initialHelp = true, glyphSet = "unicode", window: initialWindow = WINDOW_DEFAULT, resume = null, messages = null } = {}) {
   let windowSize = initialWindow;
   if (!Array.isArray(levels) || levels.length === 0) {
     throw new Error("createGame: at least one level is required");
@@ -28,6 +29,13 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   let session = null;
   let turns = 0;
   let message = "";
+  // #865: the `{ id, params }` behind `message`, worded from the game's catalogue over the defaults.
+  let messageData = [];
+  const catalogue = messages ? { ...DEFAULT_MESSAGES, ...messages } : DEFAULT_MESSAGES;
+  function say(...items) {
+    messageData = items.filter(Boolean);
+    message = messageData.map((item) => formatMessage(item, catalogue)).filter(Boolean).join("   ");
+  }
   // #757: the sound cues of the last call that ran a tick (the session's turn result), for a client with audio.
   let cues = [];
   let showHelp = initialHelp;
@@ -44,7 +52,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     session = await createSession({ simConfig: level.simConfig, initialState: level.initialState, fog, glyphSet,
       ...(level.costing ? { costing: level.costing } : {}) });
     turns = 0;
-    message = "";
+    say();
     panel = null;
     sprintArmed = false;
   }
@@ -63,14 +71,14 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     } catch (error) {
       if (error.code !== "PLAY_SAVE_STALE") throw error;
       await startLevel(index);
-      message = "The saved run could not be resumed on this version, so the level starts fresh.";
+      say(msg("level.resumeStale"));
     }
   } else {
     await startLevel(levelIndex);
   }
 
   // `actorId` commands a party member other than the seated one (a label works too).
-  async function act(command, describe = () => "", { actorId } = {}) {
+  async function act(command, describe = () => null, { actorId } = {}) {
     const before = session.status();
     if (actorId === undefined && (before.exited || before.defeated)) return null;
     const playerBefore = actorId === undefined ? session.view().player : null;
@@ -80,14 +88,14 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     if (result.tick !== before.tick) turns += 1;
     const rejected = result.rejected[0];
     // At the exit, or once defeated, the status line already says what to do next.
-    if (result.status.defeated) message = "";
-    else if (rejected && !result.status.atExit) message = rejectionMessage(rejected.reason, playerBefore, rejected.params);
-    else if (result.accepted.length > 0) message = describe();
+    if (result.status.defeated) say();
+    else if (rejected && !result.status.atExit) say(rejectionMessageData(rejected.reason, playerBefore, rejected.params));
+    else if (result.accepted.length > 0) say(describe());
     // #463: name what the tick's casts did to and by the player.
     if (result.tick !== before.tick && !result.status.defeated) {
-      const battle = battleLines(session.view());
-      if (battle.own && result.accepted.length > 0) message = battle.own;
-      message = [message, ...battle.others, ...allyWarningLines(session.view()), vitalChangeLine(session.view())].filter(Boolean).join("   ");
+      const battle = battleLinesData(session.view());
+      const lead = battle.own && result.accepted.length > 0 ? [battle.own] : messageData;
+      say(...lead, ...battle.others, ...allyWarningData(session.view()), vitalChangeData(session.view()));
     }
     return result;
   }
@@ -99,7 +107,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const result = await session.actTick(actorCommands);
     cues = result.cues ?? [];
     if (result.tick !== before.tick) turns += 1;
-    message = "";
+    say();
     return result;
   }
 
@@ -108,11 +116,11 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     panel = null;
     const result = session.switchTo(ref);
     if (!result.ok) {
-      message = rejectionMessage(result.reason);
+      say(rejectionMessageData(result.reason));
       return result;
     }
     const member = session.view().party.find((entry) => entry.id === result.actorId);
-    message = `You now play ${result.actorId}${member?.label ? ` (${member.label})` : ""}.`;
+    say(msg("seat.switched", { actorId: result.actorId, ...(member?.label ? { label: member.label } : {}) }));
     return result;
   }
 
@@ -120,7 +128,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   function nextPartyMember() {
     const party = session.view().party || [];
     if (party.length < 2) {
-      message = "No one else in your party to play.";
+      say(msg("seat.noOtherMember"));
       return;
     }
     const at = party.findIndex((member) => member.active);
@@ -133,12 +141,12 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const result = await session.order(actorId, strategy);
     cues = result.cues ?? [];
     if (!result.ok) {
-      message = result.reason === "invalid_strategy" ? `That order does not make sense: ${result.error}` : rejectionMessage(result.reason);
+      say(result.reason === "invalid_strategy" ? msg("order.invalid", { error: result.error }) : rejectionMessageData(result.reason));
       return result;
     }
     turns += 1;
     const member = (session.view().orders || []).find((entry) => entry.id === result.actorId);
-    message = `${member?.label ?? result.actorId} takes the order.`;
+    say(msg("order.taken", { actorId: result.actorId, ...(member?.label ? { label: member.label } : {}) }));
     return result;
   }
 
@@ -148,8 +156,8 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const result = await session.advance({ ticks, until });
     cues = result.cues ?? [];
     turns += result.ticks;
-    message = result.stoppedBy === "contact" ? "Someone hostile comes into sight."
-      : result.stoppedBy === "orders_done" ? "Every order has run its course." : "";
+    say(result.stoppedBy === "contact" ? msg("advance.contact")
+      : result.stoppedBy === "orders_done" ? msg("advance.ordersDone") : null);
     return result;
   }
 
@@ -162,7 +170,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
    */
   async function command(entry) {
     if (!entry || typeof entry !== "object") throw new Error("a command must be an object with a kind");
-    message = "";
+    say();
     cues = [];
     if (entry.kind === "switch") return switchTo(entry.actorId);
     if (entry.kind === "order") return order(entry.actorId, entry.strategy);
@@ -177,7 +185,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   function openOrders() {
     const items = session.view().orderable || [];
     if (items.length === 0) {
-      message = "No one on your side to order.";
+      say(msg("order.noneOnSide"));
       return;
     }
     if (items.length === 1) openOrderChoices(items[0]);
@@ -197,7 +205,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   function openAffinities() {
     const affinities = session.view().player?.affinities || [];
     if (affinities.length === 0) {
-      message = "You know no affinities yet.";
+      say(msg("affinities.noneKnown"));
       return;
     }
     panel = { type: "affinities", items: affinities, index: 0 };
@@ -211,7 +219,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const player = session.view().player;
     const affinityKey = `${pair.kind}:${pair.expression}`;
     if (!equippedKeys(player).includes(affinityKey)) {
-      message = "Equip it first (press its number).";
+      say(msg("relevel.equipFirst"));
       return;
     }
     const { name, held } = LEVELS[field];
@@ -219,17 +227,17 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     // Core refuses these too (InvalidAffinityStacks / InvalidAffinityIntensity), but a refused
     // command still costs the turn; the bounds come from the view: 1 up to what is held.
     if (value < 1) {
-      message = `It already runs at its lowest ${name}, 1.`;
+      say(msg("relevel.atLowest", { field }));
       return;
     }
     if (value > held(pair)) {
-      message = `It already runs at all the ${name} you hold, ${held(pair)}.`;
+      say(msg("relevel.atHeld", { field, held: held(pair) }));
       return;
     }
     // Both numbers go with every re-level, so changing one keeps the other where it runs.
     const levels = { stacks: runningLevel(player, pair, "stacks"), intensity: runningLevel(player, pair, "intensity"), [field]: value };
     await act({ kind: "equip_affinity", params: { affinityKey, ...levels } },
-      () => `${keyLabel(affinityKey)} now runs at ${name} ${value} of ${held(pair)}.`);
+      () => msg("relevel.done", { affinityKey, field, value, held: held(pair) }));
   }
 
   // Without a slot, core casts the first equipped push or pull. With nothing in sight the
@@ -247,7 +255,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   function openInspect() {
     const targets = targetsInSight(session.view());
     if (targets.length === 0) {
-      message = "Nothing in sight to inspect.";
+      say(msg("inspect.none"));
       return;
     }
     panel = { type: "target", items: targets, index: 0, inspect: true };
@@ -258,7 +266,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const view = session.view();
     const targets = targetsInSight(view);
     if (targets.length === 0) {
-      message = "Nothing in sight to watch.";
+      say(msg("watch.none"));
       return;
     }
     const watched = new Set((view.inspections ?? []).filter((entry) => entry.watched).map((entry) => entry.id));
@@ -269,13 +277,13 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const target = panel.items[panel.index];
     panel = null;
     await act({ kind: "watch", params: { targetId: target.id } },
-      () => (target.watched ? `You stop watching ${target.id}.` : `You watch ${target.id}.`));
+      () => msg(target.watched ? "watch.stop" : "watch.start", { targetId: target.id }));
   }
 
   async function inspectTarget() {
     const target = panel.items[panel.index];
     panel = null;
-    await act({ kind: "inspect", params: { targetId: target.id } }, () => `You study ${target.id}.`);
+    await act({ kind: "inspect", params: { targetId: target.id } }, () => msg("inspect.study", { targetId: target.id }));
   }
 
   // Aiming at a tile (#413): the cursor starts on the player and moves with the move keys.
@@ -293,7 +301,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const player = session.view().player;
     const key = equippedKeys(player).find((k) => k.endsWith(":push"));
     if (!key) {
-      message = "Equip a push to raise a barrier.";
+      say(msg("raise.needPush"));
       return;
     }
     openAim(key, null, true);
@@ -314,11 +322,11 @@ export async function createGameController({ levels, startIndex = 0, createSessi
       const had = barrierCells();
       await act({ kind: "raise_barrier", params }, () => {
         const count = barrierCells() - had;
-        return `You raise ${keyLabel(used)} ${aimLabel(at, cursor)}: ${count} barrier${count === 1 ? "" : "s"}.`;
+        return msg("raise.done", { affinityKey: used, from: { x: at.x, y: at.y }, to: { x: cursor.x, y: cursor.y }, count });
       });
       return;
     }
-    await act({ kind: "cast_affinity", params }, () => `You cast ${keyLabel(used)} ${aimLabel(at, cursor)}.`);
+    await act({ kind: "cast_affinity", params }, () => msg("cast.atTile", { affinityKey: used, from: { x: at.x, y: at.y }, to: { x: cursor.x, y: cursor.y } }));
   }
 
   // A slot's digit outside a panel: aim that slot. Emit and draw need no cast.
@@ -326,11 +334,11 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const player = session.view().player;
     const key = equippedKeys(player)[index];
     if (!key) {
-      message = `Slot ${index + 1} is empty.`;
+      say(msg("slot.empty", { slot: index + 1 }));
       return;
     }
     if (!castable(player)[key]) {
-      message = `${keyLabel(key)} works on its own while equipped.`;
+      say(msg("slot.passive", { affinityKey: key }));
       return;
     }
     openTargets(key);
@@ -343,7 +351,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const player = session.view().player;
     const used = named ?? equippedKeys(player).find((key) => castable(player)[key]);
     await act({ kind: "cast_affinity", params: { targetId: target.id, ...(named ? { affinityKey: named } : {}) } },
-      () => `You cast ${keyLabel(used)} at ${target.id}.`);
+      () => msg("cast.atTarget", { affinityKey: used, targetId: target.id }));
   }
 
   // A known affinity's digit in the panel: unequip it if equipped, else equip it
@@ -355,13 +363,13 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const player = session.view().player;
     const equipped = equippedKeys(player);
     if (equipped.includes(key)) {
-      await act({ kind: "unequip_affinity", params: { affinityKey: key } }, () => `Unequipped ${keyLabel(key)}.`);
+      await act({ kind: "unequip_affinity", params: { affinityKey: key } }, () => msg("affinity.unequipped", { affinityKey: key }));
       return;
     }
     const named = replaceKey && equipped.includes(replaceKey) ? replaceKey : null;
     const replaced = named ?? (equipped.length >= (player?.affinitySlots ?? 1) ? equipped[0] : null);
     await act({ kind: "equip_affinity", params: { affinityKey: key, ...(named ? { replaceKey: named } : {}) } },
-      () => `Equipped ${affinityLabel(pair)}${replaced ? ` in place of ${keyLabel(replaced)}` : ""}.`);
+      () => msg("affinity.equipped", { affinityKey: key, stacks: pair.stacks, intensity: pair.intensity ?? 1, ...(replaced ? { replacedKey: replaced } : {}) }));
   }
 
   async function take(item) {
@@ -370,9 +378,11 @@ export async function createGameController({ levels, startIndex = 0, createSessi
       () => {
         // An intact resource stays standing after it is taken from; say so once nothing is left in it.
         const spent = item.intact && !(session.view().loot || []).some((other) => other.targetId === item.targetId);
+        const loot = { kind: item.kind, ...(item.affinity ? { affinity: item.affinity, expression: item.expression } : {}),
+          ...(item.vitals ? { vitals: structuredClone(item.vitals) } : {}), ...(item.permanenceMode ? { permanenceMode: item.permanenceMode } : {}) };
         return item.kind === "vital"
-          ? `You take ${item.targetId}: ${lootLabel(item)}.${item.intact ? ` It stays on the floor${spent ? ", spent" : ""}.` : ""}`
-          : `You take ${lootLabel(item)} from ${item.targetId}.`;
+          ? msg("take.vital", { targetId: item.targetId, item: loot, intact: Boolean(item.intact), spent: Boolean(spent) })
+          : msg("take.from", { targetId: item.targetId, item: loot });
       });
   }
 
@@ -380,7 +390,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const view = session.view();
     const loot = view.loot || [];
     if (loot.length === 0) {
-      message = takeRefusal(view);
+      say(takeRefusalData(view));
       return;
     }
     if (loot.length === 1) {
@@ -470,7 +480,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
 
   async function handle(intent) {
     if (!intent) return { quit: false };
-    message = "";
+    say();
     cues = [];
     if (panel && await handlePanel(intent)) return { quit: false };
     switch (intent.type) {
@@ -492,7 +502,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
           await startLevel(levelIndex + 1);
         } else {
           finished = true;
-          message = "That was the last level. Press r to replay it or q to quit.";
+          say(msg("level.last"));
         }
         break;
       case INTENT.WAIT:
@@ -502,13 +512,13 @@ export async function createGameController({ levels, startIndex = 0, createSessi
         // Sprint (#437): shift+move one-shot, or sticky latch from x / Sprint until toggled off.
         const sprint = Boolean(intent.sprint) || sprintArmed;
         await act({ kind: "move", params: { direction: intent.direction, ...(sprint ? { sprint: true } : {}) } },
-          () => (sprint ? "You sprint." : ""));
+          () => (sprint ? msg("move.sprint") : null));
         break;
       }
       case INTENT.SPRINT:
         sprintArmed = !sprintArmed;
 // AK-19: status/battle-log band is combat observation, not a how-to; sprint cost lives in Keys/help.
-        message = sprintArmed ? "Sprint armed." : "Sprint off.";
+        say(msg(sprintArmed ? "sprint.armed" : "sprint.off"));
         break;
       case INTENT.AFFINITIES:
         openAffinities();
@@ -586,7 +596,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const level = levels[levelIndex];
     session = await replayPlaySession({ simConfig: level.simConfig, initialState: level.initialState, capturedInput: capture, fog });
     turns = capture.payload.commands.length;
-    message = "";
+    say();
     panel = null;
     finished = false;
   }
@@ -633,7 +643,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
    */
   async function toggleSlotAffinity(affinityKey, replaceKey = null) {
     panel = null;
-    message = "";
+    say();
     const pair = (session.view().player?.affinities || []).find((candidate) => `${candidate.kind}:${candidate.expression}` === affinityKey);
     if (pair) await toggleAffinity(pair, replaceKey);
   }
@@ -642,7 +652,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   async function tuneSlot(affinityKey, field, step) {
     const items = session.view().player?.affinities || [];
     const index = items.findIndex((candidate) => `${candidate.kind}:${candidate.expression}` === affinityKey);
-    message = "";
+    say();
     if (index < 0 || !LEVELS[field]) return;
     panel = { type: "affinities", items, index };
     await relevel(field, step);
@@ -711,6 +721,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
       levelCount: levels.length,
       turns,
       message,
+      messageData: structuredClone(messageData),
       showHelp,
       windowSize,
       aim: panel?.type === "aim" ? panel.cursor : null,

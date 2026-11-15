@@ -83,6 +83,23 @@ still reproduces the state resumes normally. `validatePlaySave` checks a save's 
 controller has `save(meta)` and a `resume: { levelIndex, save }` option that starts the level fresh, with a message,
 when the save is stale.
 
+### Wording
+
+The game controller's sentences (refusals, battle and vital lines, loot and order replies) are data first.
+`frame().messageData` is the list of `{ id, params }` behind `frame().message`; params are numbers, ids, affinity keys
+and positions, never English. To re-word or translate, pass a catalogue of templates for the ids you want to change:
+
+```js
+import { createGameController, MESSAGE_IDS } from "@agon-engine/engine/client";
+
+const game = await createGameController({ levels, messages: {
+  [MESSAGE_IDS["slot.empty"]]: ({ slot }) => `Emplacement ${slot} vide.`,
+} });
+```
+
+Ids you leave out keep `DEFAULT_MESSAGES`; `formatMessage({ id, params }, catalogue)` words one message. Battle-log
+lines (`view().battleLog[].text`) are render's wording and not catalogued yet.
+
 ## 4. Draw it
 
 Agon never draws. `view()` and `buildBoardDrawModel` return data: what is on each cell, what the player can see, what

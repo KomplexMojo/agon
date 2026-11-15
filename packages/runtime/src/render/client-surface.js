@@ -43,5 +43,6 @@ export { WALL_NEIGHBOUR_BITS, WALL_BLOB_BITS, WALL_BLOB_MASKS, wallBlobSlot } fr
 export { FLOOR_VARIANT_COUNT } from "./floor-variants.js";
 export { PLAY_SAVE_SCHEMA, validatePlaySave } from "../runner/play-save.js";
 export { ENGINE_VERSION } from "../contracts/engine-version.js";
+export { MESSAGE_IDS, DEFAULT_MESSAGES, formatMessage } from "../controls/message-catalogue.js";
 export { buildAffinityBoardOverlayModel } from "./affinity-overlay-model.js";
 export { resolveElementArt, elementArtCoverage, elementKeyFor } from "./element-art.js";
