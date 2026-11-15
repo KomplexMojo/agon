@@ -67,6 +67,7 @@ behaviors have a passing G1 test and which do not. Those blocks mirror
 
 | README Path | What belongs here |
 |---|---|
+| `examples/minimal-game/README.md` | The smallest complete game on Agon: author a level, play it, print the board, through the published entries only. Run by the suite. |
 | `packages/ui-ascii/README.md` | Interactive terminal maze over the runtime play session: keys, screen layout, level loading. No rules, no `core-ts` imports. |
 
 ## Fixtures, benchmarks and tooling

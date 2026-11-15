@@ -1,0 +1,12 @@
+{
+  "name": "agon-minimal-game",
+  "private": true,
+  "type": "module",
+  "description": "The smallest complete game on Agon: author a level, play it, draw it as text.",
+  "scripts": {
+    "start": "node play.mjs"
+  },
+  "dependencies": {
+    "@agon-engine/engine": "workspace:*"
+  }
+}

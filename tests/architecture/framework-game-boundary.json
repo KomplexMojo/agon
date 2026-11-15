@@ -12,7 +12,8 @@
   "gameRoots": [
     "scripts/brand",
     "scripts/design",
-    "scripts/demo"
+    "scripts/demo",
+    "examples"
   ],
   "apiSurface": {
     "packages/engine/src/client.js": {
