@@ -3,7 +3,7 @@ import { join, dirname } from "node:path";
 import os from "node:os";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListResourcesRequestSchema, ListToolsRequestSchema, ReadResourceRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import {
   executeCommand,
   resolveFromRunArtifactPathsFromCommandOutDirs,
@@ -19,7 +19,6 @@ import { testingTools } from "./tools/testing.mjs";
 import { tickTools } from "./tools/tick.mjs";
 import { playTools } from "./tools/play.mjs";
 import { sandboxTools } from "./tools/sandbox.mjs";
-import { adaptiveWorkflowResources, adaptiveWorkflowTools, assertAdaptiveWorkflowArgs, readAdaptiveWorkflowResource } from "./adaptive-workflow-tools.mjs";
 import { startSandboxBridgeServer, stopSandboxBridgeServer } from "./bridge-server.mjs";
 
 const SERVER_NAME = "agon-cli";
@@ -35,7 +34,6 @@ const TOOL_DEFINITIONS = [
   ...tickTools,
   ...playTools,
   ...sandboxTools,
-  ...adaptiveWorkflowTools,
 ];
 
 const TOOL_MAP = new Map(TOOL_DEFINITIONS.map((tool) => [tool.name, tool]));
@@ -98,10 +96,6 @@ function getCommandOutDirEntries(runId) {
   return Array.from(record.commands.entries()).map(([command, outDir]) => ({ command, outDir }));
 }
 
-function workflowRunSummaries() {
-  return Array.from(REMEMBERED_RUNS.values()).filter((record) => record.commands.has("workflow")).map((record) => ({ runId: record.runId, outDir: record.commands.get("workflow") })).sort((left, right) => left.runId.localeCompare(right.runId));
-}
-
 function rememberRunArtifacts({ tool, args, result }) {
   if (result?.dryRun === true || args?.dryRun === true) {
     return false;
@@ -134,7 +128,6 @@ function resolveDefaultOutDir(tool, args) {
   // createTool-based tools dispatch through the CLI's command registry. Fall back to
   // the tool's own name so the temp-dir path stays a valid string either way.
   const commandLabel = normalizeNonEmptyString(tool.command) || tool.name;
-  if (tool.command === "workflow" && tool.workflowAction !== "run") return null;
   if (tool.command === "scenario" && runId) {
     return join(SESSION_TEMP_ROOT, runId);
   }
@@ -165,11 +158,6 @@ function resolveRememberedRunDirOverride(tool, args) {
 
 async function maybeResolveRememberedInputs(tool, rawArgs) {
   const args = { ...rawArgs };
-  if (tool.command === "workflow" && tool.workflowAction !== "run" && normalizeNonEmptyString(args.runId) && !normalizeNonEmptyString(args.outDir)) {
-    const outDir = REMEMBERED_RUNS.get(args.runId)?.commands.get("workflow");
-    if (!outDir) throw new Error(`Unknown remembered workflow run id: ${args.runId}`);
-    args.outDir = outDir;
-  }
   if (
     tool.command === "run"
     && normalizeNonEmptyString(args.fromRun)
@@ -384,7 +372,6 @@ const server = new Server(
   {
     capabilities: {
       tools: {},
-      resources: {},
     },
   },
 );
@@ -396,12 +383,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => enqueueCommand(() =
     inputSchema,
   })),
 })));
-
-server.setRequestHandler(ListResourcesRequestSchema, async () => enqueueCommand(() => ({ resources: adaptiveWorkflowResources })));
-server.setRequestHandler(ReadResourceRequestSchema, async (request) => enqueueCommand(() => {
-  const value = readAdaptiveWorkflowResource(request.params.uri, workflowRunSummaries());
-  return { contents: [{ uri: request.params.uri, mimeType: "application/json", text: JSON.stringify(value, null, 2) }] };
-}));
 
 async function executeToolRequest(tool, requestedArgs) {
   const rememberedResult = await maybeHandleRememberedTool(tool, requestedArgs);
@@ -451,13 +432,12 @@ async function handleToolRequest(request, extra) {
   if (!tool) throw new Error(`Unknown tool: ${request.params.name}`);
   const requestedArgs = request.params.arguments ?? {};
   if (extra?.requestId === undefined) {
-    if (tool.command === "workflow") assertAdaptiveWorkflowArgs(tool, requestedArgs);
     return executeToolRequest(tool, requestedArgs);
   }
   const key = `${typeof extra.requestId}:${String(extra.requestId)}`; const signature = canonicalJson({ name: tool.name, arguments: requestedArgs }); const cached = MCP_REQUESTS.get(key);
   if (cached) { if (cached.signature !== signature) throw new Error(`MCP request id conflict: ${key}`); return cached.promise; }
   const entry = { signature, settled: false, promise: null };
-  entry.promise = (async () => { if (tool.command === "workflow") assertAdaptiveWorkflowArgs(tool, requestedArgs); return executeToolRequest(tool, requestedArgs); })().finally(() => { entry.settled = true; pruneMcpRequests(); }); MCP_REQUESTS.set(key, entry); pruneMcpRequests();
+  entry.promise = (async () => { return executeToolRequest(tool, requestedArgs); })().finally(() => { entry.settled = true; pruneMcpRequests(); }); MCP_REQUESTS.set(key, entry); pruneMcpRequests();
   return entry.promise;
 }
 

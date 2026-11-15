@@ -9,7 +9,7 @@ import { TickPhases } from "../_shared/tick-state-machine.mts";
  * treatment, and the same reason, as `FulfillmentDispositions` on the Moderator's controller.
  *
  * ⚠️ CR.7 / WP-5, 2026-08-12. Four modules imported `orchestrator/llm-budget-loop.js`
- * directly (`agon-impl.mjs`, `adaptive-workflow/llm-seams.js`, `commands/kernel.js`,
+ * directly (`agon-impl.mjs`, `commands/kernel.js`,
  * `ui-web/design-guidance.js`) and were four of the allowlist's live rows. CR.4's D4 predicted
  * one Orchestrator use case returning LLM-request effects would replace them; CR.4 delivered
  * `commands/llm-host.js`, but that hosts a SESSION (`runLlmSessionHosted`) and is a different

@@ -60,7 +60,6 @@ test("every orchestrateBuild call site hosts object placement", () => {
 // the Director's build capabilities carries the greedy `fitLayout`; it must replace it with a
 // hosted fitter, or be listed here with the reason it cannot.
 const FIT_UNHOSTED_ALLOWED = {
-  "packages/runtime/src/adaptive-workflow/llm-seams.js": "runFlagshipLlmSeam takes only buildCardSet; the sectional seam hosts the fit when ports.solver is supplied",
 };
 
 test("every build-capability spread hosts the budget fit", () => {

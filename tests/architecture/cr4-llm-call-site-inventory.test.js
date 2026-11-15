@@ -2,7 +2,7 @@
  * CR.4 M1 — the LLM call-site inventory, pinned mechanically.
  *
  * WHY THIS EXISTS. CR.4's caller list has been wrong three times:
- *   1. Codex's original list named three importers and missed `adaptive-workflow/llm-seams.js`.
+ *   1. Codex's original list named three importers and missed a fourth importer (since removed).
  *   2. The corrected finding recorded "four importers, eight call sites".
  *   3. The truth (2026-08-07) is **12 call sites across 5 files**, and the fifth file is
  *      `personas/orchestrator/llm-budget-loop.js` itself — `runLlmBudgetLoop` calls
@@ -39,9 +39,8 @@ const EXPECTED = Object.freeze({
   // it cannot move until the loop itself is inverted, because the loop WRAPS the session.
   "packages/runtime/src/commands/kernel.js": { runLlmSession: 0, runLlmBudgetLoop: 1 },
   // M5a migrated every DIRECT runLlmSession site to commands/llm-host.js. What is left
-  // in these three is the budget loop, which cannot move until the loop is inverted.
+  // in these is the budget loop, which cannot move until the loop is inverted.
   "packages/adapters-cli/src/cli/agon-impl.mjs": { runLlmSession: 0, runLlmBudgetLoop: 1 },
-  "packages/runtime/src/adaptive-workflow/llm-seams.js": { runLlmSession: 0, runLlmBudgetLoop: 1 },
   // NOTE: `personas/orchestrator/llm-budget-loop.js` is deliberately ABSENT. Until M5b it
   // held 2 internal runLlmSession calls — the caller no revision of CR.4 recorded before
   // 2026-08-07, and the reason the inversion is two-layer. Stage 1 replaced them with an
@@ -94,14 +93,14 @@ test("CR.4's LLM call-site inventory matches the tree", () => {
   );
 });
 
-test("the totals CR.4 is scoped against: 4 loop call sites, and no session sites at all", () => {
+test("the totals CR.4 is scoped against: 3 loop call sites, and no session sites at all", () => {
   const inventory = actualInventory();
   const total = Object.values(inventory)
     .reduce((sum, f) => sum + f.runLlmSession + f.runLlmBudgetLoop, 0);
 
   // ui-web's design-guidance.js left with the web UI (#744).
-  assert.equal(Object.keys(inventory).length, 4, "three runtime/CLI files + the benchmark script");
-  assert.equal(total, 4, "only runLlmBudgetLoop sites remain");
+  assert.equal(Object.keys(inventory).length, 3, "two runtime/CLI files + the benchmark script");
+  assert.equal(total, 3, "only runLlmBudgetLoop sites remain");
   assert.equal(
     Object.values(inventory).reduce((sum, f) => sum + f.runLlmSession, 0),
     0,

@@ -144,8 +144,8 @@ const REGISTRY = Object.freeze([
         + "PRODUCTION always fills that slot with an Orchestrator-backed runner, since the "
         + "loop's own code cannot prove that about itself — runSession is just a required "
         + "callback with no default. Answered by inventory: every production call site "
-        + "(kernel.js, agon-impl.mjs, design-guidance.js, adaptive-workflow/llm-seams.js, "
-        + "scripts/level-generation-benchmark.mjs — 5/5, none excepted) imports "
+        + "(kernel.js, agon-impl.mjs, design-guidance.js, "
+        + "scripts/level-generation-benchmark.mjs — 4/4, none excepted) imports "
         + "runLlmSessionHosted from the canonical commands/llm-host.js and wires it as "
         + "runSession; that function itself constructs a real createOrchestratorPersona and "
         + "drives the round through its own llm.beginRound seam, not a second "
@@ -937,7 +937,7 @@ const REGISTRY = Object.freeze([
         + "scope; M6 widened its SCOPE from those 14 files to every persona file, closing the "
         + "11 non-factory modules that were actually minting artifact timestamps. Requiring "
         + "the clock surfaced four production callers that had never passed one. The residue "
-        + "is 7 NON-persona sites (ports, contracts, runner, adaptive-workflow, render), "
+        + "is the NON-persona sites (ports, contracts, runner, render), "
         + "deliberately out of scope: an adapter reading the wall clock is correct — the rule "
         + "is that a persona does not.",
     },

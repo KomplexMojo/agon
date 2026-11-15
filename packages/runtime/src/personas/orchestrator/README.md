@@ -232,7 +232,7 @@ caller, so nothing about internal state escapes with it.
 ⚠️ **`commands/llm-host.js` is NOT a substitute for it.** `runLlmSessionHosted` hosts a *session*;
 this runs the budget loop. They are different capabilities and two callers legitimately import
 both. The allowlist previously carried four rows pointing straight at `llm-budget-loop.js`
-(`agon-impl.mjs`, `adaptive-workflow/llm-seams.js`, `commands/kernel.js`, `ui-web/design-guidance.js`)
+(`agon-impl.mjs`, `commands/kernel.js`, `ui-web/design-guidance.js`)
 and CR.4's D4 predicted a use case returning LLM-request effects would replace them; it did not.
 Those four now import `persona.js` and the rows are gone (allowlist 35 → 31).
 

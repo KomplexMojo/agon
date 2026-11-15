@@ -3,14 +3,14 @@
  * `contracts/artifacts.ts`.
  *
  * ═══ THE DEFECT THIS EXISTS FOR ═══════════════════════════════════════════════════════════
- * The AdaptiveWorkflow schema cluster was counted three times and was wrong three times:
+ * A retired schema cluster was counted three times and was wrong three times:
  *
  *   9  — the milestone spec: counted only `contracts/artifacts.ts`
  *   15 — M6's census: counted only `const X = "agon/…"` DECLARATIONS
  *   20 — the truth: six schemas had no constant anywhere, only inline literals
  *
  * Twelve of the twenty were declared outside `artifacts.ts`, which the charter forbids for
- * boundary-crossing data, and several were declared TWICE — `AdaptiveWorkflowRuntimeProfile`
+ * boundary-crossing data, and several were declared TWICE — a runtime-profile schema
  * under a second name (`RUNTIME_PROFILE_SNAPSHOT_SCHEMA`) that PA's census saw and dismissed
  * as a substring false positive without noticing it was a duplicate origin.
  *
@@ -19,7 +19,7 @@
  * invisible to any instrument that looks for constants.
  *
  * PERTURBATION-VERIFIED 2026-08-08:
- *   - re-add a local `const X = "agon/AdaptiveWorkflowPlan"`  → DETECTED
+ *   - re-add a local `const X = "agon/RetiredPlan"`  → DETECTED
  *   - inline a bare `"agon/Whatever"` literal in a prod file  → DETECTED
  *   - remove a name from KNOWN_OUTSTANDING                            → DETECTED (it is exact)
  *
@@ -29,7 +29,7 @@
  *
  *   1. The declaration check has no exemptions left, so a new undeclared schema fails on
  *      arrival rather than being added to a list.
- *   2. The retype check was widened from the AdaptiveWorkflow cluster to a named
+ *   2. The retype check was widened from that cluster to a named
  *      SINGLE_ORIGIN_SCHEMAS set that includes the seven. Without that widening, M8 would
  *      have been erasable one file at a time by a green suite — every one of its seven would
  *      still pass the declaration check while retyped, which is exactly the hole M7's
@@ -69,7 +69,7 @@ const ARTIFACTS = "packages/runtime/src/contracts/artifacts.ts";
  * The one exemption list, honoured by every check below. Enumerated, never silenced.
  *
  * ✅ EMPTIED BY M8 (2026-08-11) and still empty after M9. M7 left seven schemas here — the
- * same charter violation as the AdaptiveWorkflow cluster, elsewhere in the tree — and
+ * same charter violation as that cluster, elsewhere in the tree — and
  * recorded them rather than silencing them, precisely so the next census would find a list
  * instead of a search. It worked: M8 was executable from this list alone.
  *
@@ -182,8 +182,8 @@ test("every single-origin schema is declared in exactly one place", () => {
 /**
  * ⚠️ THIS TEST EXISTS BECAUSE THE FIRST VERSION OF THIS GUARD DID NOT CATCH ITS OWN DEFECT.
  *
- * Perturbation P2 — replacing `ADAPTIVE_WORKFLOW_PLAN_SCHEMA` in `runner.js` with the bare
- * literal `"agon/AdaptiveWorkflowPlan"` — PASSED the checks above. They verify a
+ * Perturbation P2 — replacing a plan schema constant with the bare
+ * literal `"agon/RetiredPlan"` — PASSED the checks above. They verify a
  * schema is DECLARED centrally; they say nothing about whether a use site imports that
  * declaration or retypes the string. Retyping is the actual defect: it is how six schemas
  * came to have no constant at all, and a "declared in artifacts.ts" check cannot see it
