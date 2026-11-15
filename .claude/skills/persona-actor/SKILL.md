@@ -21,7 +21,7 @@ Scoped change skill for the **action-proposal persona**. Load this instead of sw
 
 ## Forbidden
 
-- Importing Actor internals from outside this directory — outside callers use only `controller.js` / `persona.js` / `contracts.ts`.
+- Importing Actor internals from outside this directory — outside callers use only `controller.js` / `persona.js`.
 - Putting Actor scoring, motivation defaults, or decision policy into adapters or CLI.
 - Accepting/rejecting actions or mutating state inside Actor — proposals only; `core-ts` is authoritative for outcomes.
 - Executing effects inline (including solver IO) — emit `solver_request` / effects as data for ports + adapters.
@@ -41,7 +41,7 @@ Scoped change skill for the **action-proposal persona**. Load this instead of sw
 ```bash
 pnpm run test:vitest -- tests/personas/actor/
 pnpm run test:vitest -- tests/architecture/persona-boundary.test.js tests/architecture/actor-runtime-decisioning-authority.test.js tests/architecture/actor-adapter-policy-residue.test.js tests/architecture/adapters-cli-no-actor-authoring.test.js
-pnpm run typecheck   # if contracts.ts or typed surfaces changed
+pnpm run typecheck   # if typed surfaces changed
 ```
 
 ## Escalate
@@ -51,6 +51,6 @@ Stop when proposal vs legality ownership is unclear, adapter policy residue woul
 ## Pointers
 
 - README: `packages/runtime/src/personas/actor/README.md`
-- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`, `contracts.ts`
+- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`
 - Solver port: `packages/runtime/src/ports/solver.js`
 - Core outcomes: `packages/core-ts/`

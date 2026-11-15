@@ -21,7 +21,7 @@ Scoped change skill for the **simulation configuration and composition persona**
 
 ## Forbidden
 
-- Importing Configurator internals from outside this directory — outside callers use only `controller.js` / `persona.js` / `contracts.ts`.
+- Importing Configurator internals from outside this directory — outside callers use only `controller.js` / `persona.js`.
 - Judging budgets or declaring token costs (Allocator owns pricing; Configurator authors, Allocator judges).
 - Silent cost fallbacks or private price tables.
 - Running ticks, resolving affinities as Moderator, or mutating live sim state.
@@ -41,7 +41,7 @@ Scoped change skill for the **simulation configuration and composition persona**
 ```bash
 pnpm run test:vitest -- tests/personas/configurator/
 pnpm run test:vitest -- tests/architecture/persona-boundary.test.js tests/architecture/configurator-actors-authority.test.js tests/architecture/configurator-cards-authority.test.js tests/architecture/pricing-authority.test.js
-pnpm run typecheck   # if contracts.ts or typed surfaces changed
+pnpm run typecheck   # if typed surfaces changed
 ```
 
 ## Escalate
@@ -51,6 +51,6 @@ Stop when authoring vs pricing ownership blurs, placement rules belong in `core-
 ## Pointers
 
 - README: `packages/runtime/src/personas/configurator/README.md`
-- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`, `contracts.ts`
+- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`
 - Allocator handoff: ConfigurationCandidate / budget receipt artifacts in `packages/runtime/src/contracts/artifacts.ts`
 - Charter: `docs/architecture-charter.md`

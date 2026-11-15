@@ -160,7 +160,7 @@ responsibilities with no G1 entry** — none of which was known before it existe
 **Enforcement rules (blocking on every diff):**
 
 1. **Controller-only boundary.** Code outside a persona's directory may import only that persona's
-   `controller.js`, `persona.js`, or `contracts.ts`. Importing a persona's internal modules (`validate-spend.js`, `cost-model.js`,
+   `controller.js` or `persona.js`. Importing a persona's internal modules (`validate-spend.js`, `cost-model.js`,
    `llm-session.js`, …) from outside its directory is a violation. Adapters never import persona
    internals. Enforced by `tests/architecture/persona-boundary.test.js`, which fails on any NEW
    violation; `persona-boundary-allowlist.json` records today's known debt and must only shrink.

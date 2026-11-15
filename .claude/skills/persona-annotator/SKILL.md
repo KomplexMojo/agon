@@ -20,7 +20,7 @@ Scoped change skill for the **telemetry and observability persona**. Load this i
 
 ## Forbidden
 
-- Importing Annotator internals from outside this directory — outside callers use only `controller.js` / `persona.js` / `contracts.ts`.
+- Importing Annotator internals from outside this directory — outside callers use only `controller.js` / `persona.js`.
 - Feeding observations back into execution as decisions (Annotator observes; it does not steer).
 - Stamping `producedBy: "annotator"` from glue that did not run Annotator.
 - Executing effects inline or performing adapter IO inside the persona.
@@ -40,7 +40,7 @@ Scoped change skill for the **telemetry and observability persona**. Load this i
 ```bash
 pnpm run test:vitest -- tests/personas/annotator/
 pnpm run test:vitest -- tests/architecture/persona-boundary.test.js tests/architecture/persona-authority.test.js
-pnpm run typecheck   # if contracts.ts or typed surfaces changed
+pnpm run typecheck   # if typed surfaces changed
 ```
 
 ## Escalate
@@ -50,6 +50,6 @@ Stop when provenance would lie about who produced an artifact, summarization sta
 ## Pointers
 
 - README: `packages/runtime/src/personas/annotator/README.md`
-- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`, `contracts.ts`
+- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`
 - Artifacts: `packages/runtime/src/contracts/artifacts.ts`
 - Charter provenance rules: `docs/architecture-charter.md`

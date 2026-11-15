@@ -21,7 +21,7 @@ Scoped change skill for the **execution and sequencing persona**. Load this inst
 
 ## Forbidden
 
-- Importing Moderator internals from outside this directory — outside callers use only `controller.js` / `persona.js` / `contracts.ts`.
+- Importing Moderator internals from outside this directory — outside callers use only `controller.js` / `persona.js`.
 - Performing LLM/IPFS/chain/solver IO inside Moderator — plan fulfillment; do not execute adapters here.
 - Replacing `core-ts` rule enforcement or inventing strategy/config/pricing domain logic.
 - Lateral imports of other personas’ internals.
@@ -41,7 +41,7 @@ Scoped change skill for the **execution and sequencing persona**. Load this inst
 ```bash
 pnpm run test:vitest -- tests/personas/moderator/
 pnpm run test:vitest -- tests/architecture/persona-boundary.test.js tests/architecture/ports-and-adapters-boundary.test.js
-pnpm run typecheck   # if contracts.ts or typed surfaces changed
+pnpm run typecheck   # if typed surfaces changed
 ```
 
 ## Escalate
@@ -51,6 +51,6 @@ Stop when tick policy vs adapter execution ownership blurs, runner/glue would ga
 ## Pointers
 
 - README: `packages/runtime/src/personas/moderator/README.md`
-- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`, `contracts.ts`
+- Controller / FSM: `controller.js`, `state-machine.js`, `persona.js`
 - Effects dispatch: `packages/runtime/src/ports/effects.js`
 - Runner: `packages/runtime/src/runner/runtime-fsm.mjs`

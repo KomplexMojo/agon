@@ -165,8 +165,7 @@ The Annotator is responsible only for **describing that truth**.
 
 ## Architectural Intent
 
-Cross-persona artifacts live in `packages/runtime/src/contracts/artifacts.ts`. Annotator state-machine
-inputs/outputs belong in `packages/runtime/src/personas/annotator/contracts.ts`.
+Cross-persona artifacts live in `packages/runtime/src/contracts/artifacts.ts`; a persona has no contracts file of its own.
 
 This separation ensures that:
 - Observability can evolve independently of simulation mechanics.
@@ -176,7 +175,7 @@ This separation ensures that:
 The Annotator is therefore a **steward of recorded truth**, providing clarity and insight without altering the course of execution.
 
 ## Drift guardrails
-- Canonical source: `controller.js` + `state-machine.js` + `contracts.ts`. The 1-line `.mts` re-export shims were deleted 2026-08-01; consumers import `persona.js` (the controller barrel), not the state machine.
+- Canonical source: `controller.js` + `state-machine.js`. The 1-line `.mts` re-export shims were deleted 2026-08-01; consumers import `persona.js` (the controller barrel), not the state machine.
 - Keep README, contracts, fixtures, and any state-diagram metadata in sync when states/events/subscriptions change.
 - Table-driven persona tests (phase/transition fixtures) are the safety net; turn off `TS_NODE_TRANSPILE_ONLY` in CI to catch signature drift.
 - Entry points are `.js`. There is no `.mts` twin (no `ts-node/esm` required).

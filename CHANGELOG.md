@@ -11,6 +11,7 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 
 ### Removed
 
+- The seven unused persona `contracts.ts` files (#861, 497 lines, imported by nothing). A persona no longer requires one; `contracts.ts` is out of the controller-only boundary's public files. Not part of the public API.
 - `agon workflow` and the `agon_workflow_*` MCP tools (and the MCP resources they served), with the whole `AdaptiveWorkflowAgent` control plane, its artifact schemas, model-provider adapters and benchmark tool (#870). Nothing in play, authoring or the public engine entries used them. `agon llm` is unchanged.
 - The sandbox WebSocket bridge: the `agon_push_to_ui` MCP tool, `AGON_SANDBOX_BRIDGE_PORT`, and the optional `ws` peer dependency (#859). No client uses them since the web UI moved to Primordial. `agon_sandbox_*` tools are unchanged and still write their artifacts to disk.
 - The browser CLI worker, level-builder worker and the browser LLM, IPFS, blockchain and z3 adapters (#859). The recorded solver adapter and `authoring/browser` are unchanged.

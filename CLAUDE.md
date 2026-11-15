@@ -183,7 +183,7 @@ advance(event, payload): { state, context, effects }
 | Annotator | emit, summarize | Telemetry capture and normalization |
 | Moderator | all | Tick control, ordering strategy, effect fulfillment |
 
-New personas require `controller.js`, `state-machine.js`, `persona.js`, `contracts.ts`, a `README.md`, and at least one state handler.
+New personas require `controller.js`, `state-machine.js`, `persona.js`, a `README.md`, and at least one state handler.
 
 **Adapters** — all external IO (LLM, IPFS, blockchain, solver, logging) lives only in `adapters-web/-cli/-test`. Adapters receive effects from `runtime/src/ports/effects.js`; they do not pull state. Test adapters are fixture-based and fully deterministic.
 
