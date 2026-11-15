@@ -966,8 +966,8 @@ These commands exercise the external adapters directly.
 - `ipfs-publish`: publish canonical artifact maps to IPFS (or fixture CID) and emit a publish summary.
 - `ipfs-load`: load canonical artifact files (bundle/spec/manifest/sim-config/initial-state/...) from an IPFS CID into a local output directory.
 - `blockchain`: fetch chain id and optional balance via JSON-RPC.
-- `blockchain-mint`: mint a canonical card configuration artifact through the blockchain adapter contract.
-- `blockchain-load`: load a minted card configuration artifact by token id through the blockchain adapter contract.
+- `blockchain-mint`: mint a canonical card configuration artifact through the blockchain adapter contract. **Fixture-only today** (`--fixture-mint`): the live path calls `agon_mintCard`, which no chain implements (#836).
+- `blockchain-load`: load a minted card configuration artifact by token id through the blockchain adapter contract. **Fixture-only today** (`--fixture-load`): the live path calls `agon_getMintedCard`, which no chain implements (#836).
 - `llm` (alias: `ollama`): request a response from an LLM endpoint (Ollama/OpenAI-compatible HTTP API).
 
 ### Local run

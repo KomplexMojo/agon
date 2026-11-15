@@ -135,7 +135,7 @@ pnpm run mcp:serve                                    # agon-cli MCP server (ago
 pnpm run demo:cli                                     # CLI demo
 ```
 
-**There is no CI test job.** `.github/workflows/` holds only the `@claude` responder and an advisory PR review. The gates above are local and are the only ones that run — see `AGENTS.md → Review`.
+**CI runs the gates.** `.github/workflows/ci.yml` runs typecheck, the full suite and the engine bundle build on every PR and on `main`; a PR merges when the `ci` check is green (see `AGENTS.md → Review`). Run the same gates locally before pushing. Benchmarks and `sim:sweep` stay out of CI.
 
 **Benchmarks never substitute for tests.** If a benchmark run surfaced it and a deterministic test could have, the fix is the test — a recorded failing `toolArgs` replays with no LLM. **Full-scale remote runs stay outside development** (maintainer, 2026-08-13): never start one from a session, never gate a diff on one. **Local `--local` subset runs are in the loop** (maintainer, 2026-08-25) for debugging code deltas, never as a gate, and `scripts/benchmark-preflight.sh` first. Canonical content-gen scenario count: 100 (source: `loadScenarioCatalog()`). Read results rather than producing them — fetch `benchmark-results` and use `benchmark-result-reader.js` (`latest_attempt` for current health, `latest_success` for the last qualifying baseline; identity mismatch is an error). Full rule in `AGENTS.md → Benchmark strategy`.
 

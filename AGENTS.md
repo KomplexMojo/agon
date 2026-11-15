@@ -172,7 +172,7 @@ previous version of this claim was carried forward for two weeks after it stoppe
 **No human second reviewer exists, and none is coming.** Do not write, plan, or report as though a PR is waiting on one.
 
 - **`main` requires a PR, but no reviewer.** The `Protect Main` ruleset carries `deletion`, `non_fast_forward` and `pull_request` with `required_approving_review_count: 0`, plus a repository-role bypass. Re-verified 2026-09-06 — the earlier note here claimed there was no `pull_request` rule, which had stopped being true. Details and the verification command: *Branching — every change goes through a branch and a PR* above.
-- **There is no CI test job.** `.github/workflows/` holds the `@claude` responder and `claude-code-review.yml`, an automated advisory review that comments on every PR. Advisory: it blocks nothing, and it does not run the suite. **The local gates are the only gates that run.**
+- **CI runs the gates.** `.github/workflows/ci.yml` runs `pnpm run typecheck`, `pnpm run test` and `pnpm run build:engine` on every PR and on `main`. **A PR merges when the `ci` check is green.** `claude-code-review.yml` stays advisory: it comments and blocks nothing. Run the same gates locally before pushing; benchmarks and `sim:sweep` stay out of CI.
 - A PR is still worth opening — it is the reviewable unit and where the reasoning is indexed — but it is a **record, not a gate**. Never block on, or ask the maintainer to arrange, a review.
 
 **What replaces a reviewer, and is therefore not optional:**

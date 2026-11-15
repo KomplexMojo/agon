@@ -273,8 +273,8 @@ The MCP server stays the same. Only LLM-backed tools such as `agon_llm`, `agon_o
 | agon_ipfs_publish | External Adapters | Publish artifact maps through the IPFS adapter. | artifactMap, path, gateway, fixtureCid, out, outDir |
 | agon_ipfs_load | External Adapters | Load artifact files from IPFS through the CLI adapter. | cid, path, file[], gateway, fixtureMap, out, outDir |
 | agon_blockchain | External Adapters | Inspect blockchain adapter state. | rpcUrl, address, fixtureChainId, fixtureBalance, out, outDir |
-| agon_blockchain_mint | External Adapters | Mint a card through the blockchain adapter. | rpcUrl, card, owner, contract, tokenId, fixtureChainId, fixtureMint, out, outDir |
-| agon_blockchain_load | External Adapters | Load a minted card through the blockchain adapter. | rpcUrl, tokenId, owner, contract, fixtureChainId, fixtureLoad, out, outDir |
+| agon_blockchain_mint | External Adapters | Mint a card through the blockchain adapter (fixture-only today, #836). | rpcUrl, card, owner, contract, tokenId, fixtureChainId, fixtureMint, out, outDir |
+| agon_blockchain_load | External Adapters | Load a minted card through the blockchain adapter (fixture-only today, #836). | rpcUrl, tokenId, owner, contract, fixtureChainId, fixtureLoad, out, outDir |
 | agon_sandbox_create | Sandbox / Interactive | Create a standalone Phaser sandbox session with budget enforcement. | budgetReceipt, budget, width, height, entityCategories |
 | agon_sandbox_place | Sandbox / Interactive | Place and configure an entity in an existing sandbox session. | session, entityType, spec |
 | agon_sandbox_move | Sandbox / Interactive | Compose a single-tile move for an actor in a sandbox session. | session, actorId, direction, actionsOut |
