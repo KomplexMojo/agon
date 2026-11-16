@@ -67,6 +67,7 @@ import { AFFINITY_TABLE } from "../../../core-ts/src/state/affinity-table.ts";
 import { ACTOR_COMMAND_KINDS, normalizeActorCommand, normalizeActorStrategy } from "../personas/actor/persona.js";
 import { createConfiguratorPersona } from "../personas/configurator/persona.js";
 import { createAllocatorPersona } from "../personas/allocator/persona.js";
+import { evaluateLevelObjectives } from "../personas/moderator/controller.js";
 import { UNUSED_CLOCK } from "../personas/_shared/require-clock.js";
 import { EIGHT_WAY_DELTAS } from "../personas/_shared/movement-directions.js";
 import { buildActorHudModel } from "../render/actor-hud-model.js";
@@ -323,6 +324,9 @@ export async function createPlaySession({
   // #500: every cast, take, defeat and exit of every actor, whoever could see it. It feeds
   // `debugView()` only; no player-facing view reads it.
   const eventLog = [];
+  // #867: the facts the Moderator judges objectives from. Kept whole (the event log above is
+  // trimmed), each written once, so status() reads the same at any tick of a replay.
+  const objectiveFacts = { defeatedAt: {}, exitedAt: {}, takes: [] };
   function recordEvents(before) {
     const tick = currentTick();
     const apply = runtime.getTickFrames().filter((frame) => frame?.phaseDetail === "apply").at(-1) || {};
@@ -334,11 +338,23 @@ export async function createPlaySession({
       if (action?.kind === "take") eventLog.push({ tick, event: "take", actorId: action.actorId, params: { ...action.params } });
     }
     const actors = readSnapshot().actors;
+    for (const action of apply.acceptedActions || []) {
+      if (action?.kind !== "take" || !partyIds.includes(action.actorId)) continue;
+      const holding = actors.find((entry) => entry.id === action.params?.targetId)?.holdings?.find((entry) => entry.id === action.params?.holdingId);
+      const holdingKind = holding?.kind ?? (String(action.params?.holdingId ?? "").startsWith("affinity:") ? "affinity" : "vital");
+      objectiveFacts.takes.push({ tick, actorId: action.actorId, holdingKind });
+    }
     for (const [id, lifecycle, exited] of before) {
       const actor = actors.find((entry) => entry.id === id);
       if (!actor) continue;
-      if (lifecycle === "alive" && actor.lifecycle === "defeated") eventLog.push({ tick, event: "defeat", actorId: id, by: defeatedBy(actor, actors) });
-      if (!exited && runtime.hasActorExited(id)) eventLog.push({ tick, event: "exit", actorId: id });
+      if (lifecycle === "alive" && actor.lifecycle === "defeated") {
+        eventLog.push({ tick, event: "defeat", actorId: id, by: defeatedBy(actor, actors) });
+        objectiveFacts.defeatedAt[id] ??= tick;
+      }
+      if (!exited && runtime.hasActorExited(id)) {
+        eventLog.push({ tick, event: "exit", actorId: id });
+        objectiveFacts.exitedAt[id] ??= tick;
+      }
     }
     if (eventLog.length > 1000) eventLog.splice(0, eventLog.length - 1000);
   }
@@ -482,8 +498,16 @@ export async function createPlaySession({
     return playStatus({ snapshot: readSnapshot(), playerId: actorId, exited: runtime.hasActorExited(actorId), tick: currentTick() });
   }
 
+  // #867: the level's objectives and the run's outcome, judged by the Moderator from the facts
+  // above. They are about the level's player (the session's seat), whichever member is active.
+  function objectiveReport() {
+    const roles = Object.fromEntries(readSnapshot().actors.map((actor) => [actor.id, categoryOf(actor, presentation)])
+      .filter(([, role]) => typeof role === "string"));
+    return evaluateLevelObjectives({ simConfig, tick: currentTick(), seatId: playerId, roles, ...structuredClone(objectiveFacts) });
+  }
+
   function status() {
-    return statusOf(activeId);
+    return { ...statusOf(activeId), ...objectiveReport() };
   }
 
   /** Seat another party member. Free: no tick runs. */

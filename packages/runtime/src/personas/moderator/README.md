@@ -141,8 +141,21 @@ cannot move and has no motivation (a wall, a prop) never enters decide, at any r
 Actor never had a turn to propose for it. A command or a strategy (an order, or the level's)
 still wakes it; its fields, regen and lifecycle run as before.
 
+### Level objectives and the run outcome (#867)
+
+End-of-run is tick control, so the Moderator judges it. `objective-evaluation.js`
+(`evaluateLevelObjectives`, published on the controller) reads a level's `objectives`
+(`contracts/objectives.js`; none means one `reach_exit`) and returns each one's state
+(`open | met | failed`, with `progress` where counting applies) and the run's `outcome`
+(`playing | won | lost`). It is stateless: the caller supplies facts (tick, when each actor was
+defeated or left, the party's takes, actor roles), never verdicts, so a replay reads the same.
+Lost when the seat is defeated, a required objective fails, or the seat leaves with one still
+open; won when every required one is met. With the default that is exactly "won on exit, lost on
+defeat". Pinned by `tests/personas/moderator/moderator-objectives.test.js`.
+
 In short:
 - The Moderator decides **when and in what order** actions are applied, and in what order actors propose them.
+- It also judges when a run is won or lost, from the level's objectives.
 
 ## State machine & phases
 - States: initializing → ticking → pausing → stopping.
