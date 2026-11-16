@@ -472,6 +472,16 @@ finished. Both surfaces are stateless and pure;
 neither mutates caller-owned layout or object data. Hazard affinities become owned equipment with
 the authored pair active; category-specific hazard/resource collections do not enter SimConfig.
 
+### Carrying a character between levels (#868, 2026-11-16)
+
+`character-carry.js` writes the player's character down as it leaves a level
+(`characterStateFromActor`, an `agon/CharacterState`) and seats it in the next
+(`seatArrivingCharacter`). Holdings carry (affinities with stacks and intensity, slots, what is
+equipped), vitals refill to their max, and a grant that lasts one level comes back off. The seat
+keeps the next level's id, position, alignment, capabilities and motivations. `validateCharacterState`
+checks the shape. All three are on the controller. Pricing the arriving character is the Allocator's.
+Pinned by `tests/personas/configurator/configurator-character-carry.test.js`.
+
 ### Level objectives (#867, 2026-11-16)
 
 `objective-authoring.js` owns the `--objective` grammar (`parseObjectiveSpec`) and the check that a

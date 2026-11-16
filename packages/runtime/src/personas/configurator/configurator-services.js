@@ -99,6 +99,7 @@ import { placeActors } from "./actor-placement.js";
 import { prepareObjectPlacement, completeObjectPlacement, levelObjectRequests } from "./object-placement.js";
 import { parsePlacementConstraint, normalizePlacementConstraints } from "./placement-constraints.js";
 import { checkLevelObjectives, parseObjectiveSpec, withLevelObjectives } from "./objective-authoring.js";
+import { characterStateFromActor, seatArrivingCharacter, validateCharacterState } from "./character-carry.js";
 import { reportTactics, compileTactics, validateTactics } from "./tactic-report.js";
 import { composeRetinue, fitRetinues, RETINUE_ROLES } from "./retinue.js";
 import { fitTacticHazards, composeFieldHazard } from "./minefield.js";
@@ -492,6 +493,9 @@ export function attachConfiguratorServices({ fsm } = {}) {
     parseObjectiveSpec,
     checkLevelObjectives,
     withLevelObjectives,
+    characterStateFromActor,
+    seatArrivingCharacter,
+    validateCharacterState,
     reportTactics,
     compileTactics,
     validateTactics,

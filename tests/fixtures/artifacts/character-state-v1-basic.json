@@ -1,0 +1,26 @@
+{
+  "schema": "agon/CharacterState",
+  "schemaVersion": 1,
+  "meta": {
+    "producedBy": "configurator",
+    "id": "character_state_fixture",
+    "runId": "run_character_state_fixture",
+    "createdAt": "2026-11-16T00:00:00.000Z"
+  },
+  "actorId": "delver-1",
+  "fromLevel": { "simConfigId": "level-1_sim_config", "initialStateId": "level-1_initial_state" },
+  "character": {
+    "defeatVital": "health",
+    "vitals": {
+      "health": { "max": 14, "regen": 1 },
+      "mana": { "max": 10, "regen": 1 },
+      "stamina": { "max": 12, "regen": 2 }
+    },
+    "affinitySlots": 3,
+    "affinities": [
+      { "kind": "fire", "expression": "push", "stacks": 3 },
+      { "kind": "dark", "expression": "emit", "stacks": 1, "intensity": 2 }
+    ],
+    "equippedAffinityKeys": ["fire:push"]
+  }
+}

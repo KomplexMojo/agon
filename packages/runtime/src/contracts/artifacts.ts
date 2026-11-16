@@ -335,6 +335,46 @@ export interface PlaySaveArtifactV1 {
 export type PlaySaveArtifact = PlaySaveArtifactV1;
 
 // -------------------------
+// Character state (#868)
+// -------------------------
+
+export const CHARACTER_STATE_SCHEMA = "agon/CharacterState";
+
+/** One vital as it carries between levels: its ceiling and regen (it arrives full). */
+export interface CarriedVitalV1 {
+  max: number;
+  regen: number;
+}
+
+/**
+ * The player's character as it leaves a level, to arrive in the next (#868). Holdings carry
+ * (affinities with their stacks and intensity, equipped slots, the pack), vitals refill, and a
+ * grant that lasts one level (`permanenceMode: "level"`) is taken back off. The Configurator
+ * produces it and seats it; the Allocator prices it on arrival.
+ */
+export interface CharacterStateArtifactV1 {
+  schema: typeof CHARACTER_STATE_SCHEMA;
+  schemaVersion: 1;
+  meta: ArtifactMeta;
+  /** The actor it was in the level it left. */
+  actorId: string;
+  /** The level it left, when known. */
+  fromLevel?: { simConfigId: string; initialStateId: string };
+  character: {
+    defeatVital: "health" | "durability";
+    vitals: Partial<Record<"health" | "durability" | "mana" | "stamina", CarriedVitalV1>>;
+    affinitySlots?: number;
+    affinities: { kind: string; expression: string; stacks: number; intensity?: number }[];
+    /** Equipped affinity keys in equip order; the rest of `affinities` is the pack. */
+    equippedAffinityKeys: string[];
+    equippedAffinityStacks?: Record<string, number>;
+    equippedAffinityIntensity?: Record<string, number>;
+  };
+}
+
+export type CharacterStateArtifact = CharacterStateArtifactV1;
+
+// -------------------------
 // Agent authoring contract
 // -------------------------
 
