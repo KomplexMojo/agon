@@ -336,6 +336,29 @@ test("with fog, dark erases remembered cells once they leave sight; undarkened m
   assert.equal(view.sight[0][2], PLAY_SIGHT.REMEMBERED, "out of sight (corner), no dark: remembered");
 });
 
+// #858: fogMemory false is classic fog. Leaving an area turns it back to fog; only sight and
+// light show the board. The default (true) keeps the remembered board above.
+test("with fogMemory off, cells left behind return to fog", async () => {
+  const session = await createPlaySession({ simConfig, initialState, fog: true, fogMemory: false });
+  assert.equal(session.view().sight[1][1], PLAY_SIGHT.VISIBLE, "seen from the start seat");
+  await session.act(move("east"));
+  await session.act(move("south"));
+  const view = session.view();
+  assert.equal(view.sight[1][1], PLAY_SIGHT.UNKNOWN, "out of sight now: fog, not remembered");
+  assert.equal(view.rows[1][1], "?");
+  assert.ok(view.sight.every((row) => !row.includes(PLAY_SIGHT.REMEMBERED)), "no remembered cell anywhere");
+  assert.equal(view.wallMasks[0][3], null, "a wall left behind loses its mask too");
+});
+
+test("with fogMemory off, light emit is what shows cells beyond adjacency, and only while it shines", async () => {
+  const level = mazeLevel([trap("lamp", "light", { x: 3, y: 3 }, { stacks: 2, mana: 6, regen: 0 })]);
+  const session = await createPlaySession({ ...level, fog: true, fogMemory: false });
+  assert.equal(session.view().sight[3][3], PLAY_SIGHT.VISIBLE, "two tiles off, seen because it is lit");
+  await session.act({ kind: "wait" });
+  await session.act({ kind: "wait" });
+  assert.equal(session.view().sight[3][3], PLAY_SIGHT.UNKNOWN, "the lamp drained: back to fog, not remembered");
+});
+
 test("without fog, every cell is visible", async () => {
   const view = (await newSession()).view();
   assert.ok(view.sight.every((row) => /^v+$/.test(row)));

@@ -18,9 +18,11 @@ import { DEFAULT_MESSAGES, formatMessage, msg } from "./message-catalogue.js";
  * @param {number} [args.startIndex]
  * @param {Function} [args.createSession] injectable for tests
  * @param {boolean} [args.fog] fog of war: you see only what is in sight (default on)
+ * @param {boolean} [args.fogMemory] with fog, keep cells seen before on the board (default on);
+ *   false (#858) turns them back to fog when the player leaves
  * @param {boolean} [args.showHelp] start with the key help shown (default)
  */
-export async function createGameController({ levels, startIndex = 0, createSession = createPlaySession, fog = true, showHelp: initialHelp = true, glyphSet = "unicode", window: initialWindow = WINDOW_DEFAULT, resume = null, messages = null } = {}) {
+export async function createGameController({ levels, startIndex = 0, createSession = createPlaySession, fog = true, fogMemory = true, showHelp: initialHelp = true, glyphSet = "unicode", window: initialWindow = WINDOW_DEFAULT, resume = null, messages = null } = {}) {
   let windowSize = initialWindow;
   if (!Array.isArray(levels) || levels.length === 0) {
     throw new Error("createGame: at least one level is required");
@@ -49,7 +51,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   async function startLevel(index) {
     levelIndex = index;
     const level = levels[levelIndex];
-    session = await createSession({ simConfig: level.simConfig, initialState: level.initialState, fog, glyphSet,
+    session = await createSession({ simConfig: level.simConfig, initialState: level.initialState, fog, fogMemory, glyphSet,
       ...(level.costing ? { costing: level.costing } : {}) });
     turns = 0;
     say();
@@ -65,7 +67,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const level = levels[index];
     levelIndex = index;
     try {
-      session = await resumePlaySession({ simConfig: level.simConfig, initialState: level.initialState, save: resume.save, fog, glyphSet,
+      session = await resumePlaySession({ simConfig: level.simConfig, initialState: level.initialState, save: resume.save, fog, fogMemory, glyphSet,
         ...(level.costing ? { costing: level.costing } : {}) });
       turns = resume.save.capture.payload.commands.length;
     } catch (error) {
@@ -594,7 +596,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   /** Re-run a capture on the current level and continue from where it ended. */
   async function replay(capture) {
     const level = levels[levelIndex];
-    session = await replayPlaySession({ simConfig: level.simConfig, initialState: level.initialState, capturedInput: capture, fog });
+    session = await replayPlaySession({ simConfig: level.simConfig, initialState: level.initialState, capturedInput: capture, fog, fogMemory });
     turns = capture.payload.commands.length;
     say();
     panel = null;
