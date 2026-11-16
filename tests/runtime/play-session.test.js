@@ -62,7 +62,8 @@ async function walkToExit(session) {
 test("the first view is the level's board at tick 0 with the player at its seat", async () => {
   const view = (await newSession()).view();
   assert.equal(view.tick, 0);
-  assert.deepEqual(view.status, { tick: 0, exited: false, atExit: false, defeated: false });
+  assert.deepEqual(view.status, { tick: 0, exited: false, atExit: false, defeated: false,
+    outcome: "playing", objectives: [{ id: "reach_exit", kind: "reach_exit", required: true, state: "open" }] });
   assert.deepEqual(view.player.position, { x: 2, y: 1 });
   assert.equal(view.player.id, "actor_mvp");
   assert.equal(view.rows[1], "S.@.│...│");
@@ -118,7 +119,8 @@ test("standing on the exit is atExit; core's exit dwell then exits", async () =>
   assert.equal(last.status.exited, false);
   assert.deepEqual(session.view().player.position, { x: 8, y: 7 });
   const stepped = await session.act({ kind: "wait" });
-  assert.deepEqual(stepped.status, { tick: stepped.tick, exited: true, atExit: false, defeated: false });
+  assert.deepEqual(stepped.status, { tick: stepped.tick, exited: true, atExit: false, defeated: false,
+    outcome: "won", objectives: [{ id: "reach_exit", kind: "reach_exit", required: true, state: "met" }] });
 });
 
 test("stepping off the exit clears atExit", async () => {

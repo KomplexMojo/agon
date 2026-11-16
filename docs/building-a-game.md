@@ -79,7 +79,10 @@ one of `TURN_EVENT_KINDS` (on `/vocabulary`):
 
 Under fog only what your party saw or took part in is listed. `session.eventsSince(seq)` returns the events after a
 `seq`, and the game controller's `frame().events` holds the last call's. `session.status()` says whether the run is won, lost or still
-going. `captureInput()` records the commands, and `replayPlaySession` re-simulates them, which is how a run is
+going: `outcome` is `playing`, `won` or `lost`, and `objectives` lists the level's objectives (#867), each
+`{ id, kind, required, state }` with `state` `open`, `met` or `failed` and, where something is counted, `progress`
+`{ done, of }`. A level with no `objectives` has one, `reach_exit`, so it is won on leaving and lost on defeat.
+`view().status` carries the same report for a HUD. `captureInput()` records the commands, and `replayPlaySession` re-simulates them, which is how a run is
 verified or shared.
 
 ### Save and resume
