@@ -28,6 +28,10 @@ The lists below name the fixtures with a documented purpose; the directory holds
 - sim-config-artifact-v1-objectives.json: the basic config with one objective of every kind (`contracts/objectives.js`).
 - invalid/sim-config-artifact-v1-objective-unknown-kind.json, invalid/sim-config-artifact-v1-objective-survive-zero.json: shape refusals.
 
+## Character state (#868)
+- character-state-v1-basic.json: a delver as it leaves a level: three slots, a fire push held at 3 and equipped, a dark emit in the pack, vitals as ceilings.
+- invalid/character-state-v1-equips-unheld.json: equips an affinity it does not hold.
+
 ## Intent + Planning
 - intent-envelope-v1-basic.json: intake boundary request; used to test intent parsing.
 - plan-artifact-v1-basic.json: structured plan referencing the intent.

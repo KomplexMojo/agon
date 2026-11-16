@@ -109,6 +109,10 @@ export function createConfiguratorPersona({ initialState = ConfiguratorStates.UN
     parseObjectiveSpec: services.parseObjectiveSpec,
     checkLevelObjectives: services.checkLevelObjectives,
     withLevelObjectives: services.withLevelObjectives,
+    // #868 — carrying the player's character between levels: write it down as it leaves, seat it as it arrives.
+    characterStateFromActor: services.characterStateFromActor,
+    seatArrivingCharacter: services.seatArrivingCharacter,
+    validateCharacterState: services.validateCharacterState,
     // #396 — how each tactic in the plan was handled, for the placement report.
     reportTactics: services.reportTactics,
     // #398 — tactics it knows (`ambush`) compiled into placement constraints, with a report row each.
