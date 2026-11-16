@@ -147,6 +147,11 @@ export const COMPANION_MOTIVATION = "friendly";
  * @param {object}   [args.personas]   persona registry override (ablation tests); the real one by default
  * @param {boolean}  [args.fog]        apply fog of war to view(); off by default so a
  *                                     caller opts in when it draws `sight`
+ * @param {boolean}  [args.fogMemory]  with fog, keep the cells seen before on the board as
+ *                                     `REMEMBERED` (default). false (#858): only what is in sight
+ *                                     now shows, every other cell is `UNKNOWN`, so fog returns when
+ *                                     the player leaves. The session still keeps what was seen for
+ *                                     the rooms notebook; it just never reaches the board.
  * @param {string}   [args.glyphSet]   "unicode" (default) or "ascii": the wall glyph set (#574)
  */
 export async function createPlaySession({
@@ -158,6 +163,7 @@ export async function createPlaySession({
   adapters = {},
   personas,
   fog = false,
+  fogMemory = true,
   costing = null,
   glyphSet = "unicode",
   hibernationRadius,
@@ -899,6 +905,7 @@ export async function createPlaySession({
       status: status(),
       visible,
       explored: fogOn ? explored.get(activeId) ?? null : null,
+      fogMemory,
       // #416: with fog, others show what light reveals of them; your own party, everything.
       reveal: fogOn && typeof runtime.readRevealLevels === "function"
         ? Object.fromEntries(Object.entries(runtime.readRevealLevels(activeId)).filter(([id]) => !partyIds.includes(id)))
@@ -1056,7 +1063,8 @@ function renderBoard(snapshot, { presentation, legend, playerId, glyphSet }) {
 }
 
 // Fog over the board. Without a sight grid (no fog, or the player has left the map) nothing is hidden.
-function applyFog(frame, visible, explored) {
+// With `fogMemory` false (#858) a cell out of sight is unknown even when it was seen before.
+function applyFog(frame, visible, explored, fogMemory = true) {
   if (!visible || !explored) {
     return { rows: frame.buffer.slice(), sight: frame.buffer.map((row) => PLAY_SIGHT.VISIBLE.repeat(row.length)), visible: null };
   }
@@ -1069,7 +1077,7 @@ function applyFog(frame, visible, explored) {
       if (visible[y]?.[x]) {
         row += bufferRow[x];
         sightRow += PLAY_SIGHT.VISIBLE;
-      } else if (explored[y]?.[x]) {
+      } else if (fogMemory && explored[y]?.[x]) {
         row += frame.baseTiles[y][x];
         sightRow += PLAY_SIGHT.REMEMBERED;
       } else {
@@ -1181,12 +1189,12 @@ function moveStaminaCosts(cardinal, soaked) {
   };
 }
 
-export function buildPlayView({ snapshot, presentation = {}, legend: baseLegend, playerId, tick, status, visible = null, explored = null, labels = playActorLabels(snapshot.actors, presentation), field = null, drawField = null, reveal = null, upkeepTable = [], castPrices = undefined, movementStamina = undefined, minionUpkeep = 0, glyphSet = "unicode", seed = 0 }) {
+export function buildPlayView({ snapshot, presentation = {}, legend: baseLegend, playerId, tick, status, visible = null, explored = null, fogMemory = true, labels = playActorLabels(snapshot.actors, presentation), field = null, drawField = null, reveal = null, upkeepTable = [], castPrices = undefined, movementStamina = undefined, minionUpkeep = 0, glyphSet = "unicode", seed = 0 }) {
   // Actor glyphs (#575) come from the glyph set; the table rides on the legend for every UI to read.
   const glyphs = actorGlyphs(glyphSet);
   const legend = { ...baseLegend, ...(baseLegend.barrier === ASCII_TERRAIN_GLYPHS.barrier ? { barrier: glyphs.barrier } : {}) };
   const frame = renderBoard(snapshot, { presentation, legend, playerId, glyphSet });
-  const fogged = applyFog(frame, visible, explored);
+  const fogged = applyFog(frame, visible, explored, fogMemory);
   const inSight = (actor) => !fogged.visible || Boolean(fogged.visible[actor.position?.y]?.[actor.position?.x]);
   const player = snapshot.actors.find((actor) => actor.id === playerId && actor.lifecycle !== "exited") || null;
   const others = snapshot.actors.filter((actor) => actor.id !== playerId && actor.lifecycle === "alive"
