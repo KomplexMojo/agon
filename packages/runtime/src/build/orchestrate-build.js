@@ -743,6 +743,8 @@ export async function orchestrateBuild({
       dimensions: { width: layout.width, height: layout.height },
       terrain: layout.terrain,
     });
+    // #867 — the level's objectives, checked by the Configurator against the roster it just built.
+    simConfig = configuratorBuild.withLevelObjectives({ simConfig, initialState, objectives: configuratorInputs?.objectives });
 
     if (affinityPresets && affinityLoadouts) {
       const ambientPressure = buildAmbientAffinityPressure({

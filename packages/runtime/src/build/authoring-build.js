@@ -257,6 +257,7 @@ export async function runAuthoringBuild(input = {}) {
     parsedWardens = [],
     placement = [],
     tactics = [],
+    objectives,
     seed,
     placeObjects,
     solverDecisions,
@@ -294,6 +295,10 @@ export async function runAuthoringBuild(input = {}) {
   const placementConstraints = configurator.normalizePlacementConstraints(placement);
   if (placementConstraints.length > 0) {
     spec.configurator.inputs.placement = placementConstraints;
+  }
+  // #867 — level objectives, parsed by the Configurator's grammar; checked once the roster is built.
+  if (Array.isArray(objectives) && objectives.length > 0) {
+    spec.configurator.inputs.objectives = structuredClone(objectives);
   }
 
   // CR.2 / #280 — the Configurator validates and locks the assembled config inside

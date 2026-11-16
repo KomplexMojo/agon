@@ -98,6 +98,7 @@ import { composeMixedRooms } from "./mixed-room-composition.js";
 import { placeActors } from "./actor-placement.js";
 import { prepareObjectPlacement, completeObjectPlacement, levelObjectRequests } from "./object-placement.js";
 import { parsePlacementConstraint, normalizePlacementConstraints } from "./placement-constraints.js";
+import { checkLevelObjectives, parseObjectiveSpec, withLevelObjectives } from "./objective-authoring.js";
 import { reportTactics, compileTactics, validateTactics } from "./tactic-report.js";
 import { composeRetinue, fitRetinues, RETINUE_ROLES } from "./retinue.js";
 import { fitTacticHazards, composeFieldHazard } from "./minefield.js";
@@ -488,6 +489,9 @@ export function attachConfiguratorServices({ fsm } = {}) {
     levelObjectRequests,
     parsePlacementConstraint,
     normalizePlacementConstraints,
+    parseObjectiveSpec,
+    checkLevelObjectives,
+    withLevelObjectives,
     reportTactics,
     compileTactics,
     validateTactics,
