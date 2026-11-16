@@ -40,6 +40,8 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   }
   // #757: the sound cues of the last call that ran a tick (the session's turn result), for a client with audio.
   let cues = [];
+  // #864: the turn events of the same call, for a client that animates.
+  let events = [];
   let showHelp = initialHelp;
   let finished = false;
   // An open panel: the affinity list, the target picker or the loot list. Opening,
@@ -86,6 +88,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const playerBefore = actorId === undefined ? session.view().player : null;
     const result = await session.act(command, actorId === undefined ? {} : { actorId });
     cues = result.cues ?? [];
+    events = result.events ?? [];
     // A command the session refused outright (not your party, already gone) runs no tick.
     if (result.tick !== before.tick) turns += 1;
     const rejected = result.rejected[0];
@@ -108,6 +111,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     const before = session.status();
     const result = await session.actTick(actorCommands);
     cues = result.cues ?? [];
+    events = result.events ?? [];
     if (result.tick !== before.tick) turns += 1;
     say();
     return result;
@@ -142,6 +146,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     panel = null;
     const result = await session.order(actorId, strategy);
     cues = result.cues ?? [];
+    events = result.events ?? [];
     if (!result.ok) {
       say(result.reason === "invalid_strategy" ? msg("order.invalid", { error: result.error }) : rejectionMessageData(result.reason));
       return result;
@@ -157,6 +162,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     panel = null;
     const result = await session.advance({ ticks, until });
     cues = result.cues ?? [];
+    events = result.events ?? [];
     turns += result.ticks;
     say(result.stoppedBy === "contact" ? msg("advance.contact")
       : result.stoppedBy === "orders_done" ? msg("advance.ordersDone") : null);
@@ -174,6 +180,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     if (!entry || typeof entry !== "object") throw new Error("a command must be an object with a kind");
     say();
     cues = [];
+    events = [];
     if (entry.kind === "switch") return switchTo(entry.actorId);
     if (entry.kind === "order") return order(entry.actorId, entry.strategy);
     if (entry.kind === "advance") return advance({ ticks: entry.ticks ?? 1, until: entry.until });
@@ -484,6 +491,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     if (!intent) return { quit: false };
     say();
     cues = [];
+    events = [];
     if (panel && await handlePanel(intent)) return { quit: false };
     switch (intent.type) {
       case INTENT.QUIT:
@@ -572,6 +580,8 @@ export async function createGameController({ levels, startIndex = 0, createSessi
       orders: session.view().orders ?? [],
       // #757: what the last key or command's ticks sounded like; empty when it ran none.
       cues,
+      // #864: what happened in those ticks as data (`contracts/turn-events.js`); empty when none ran.
+      events,
       warnings: [...(session.pricingReport || []).map(({ message: text }) => text), ...viabilityWarnings()],
     };
   }

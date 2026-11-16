@@ -10,6 +10,10 @@
  * #692: a cast that struck another also says, in words only, how hurt the target looks after the
  * tick (`condition`, a band on its defeat vital), how hard that hit was (`hit`, scaled to the
  * struck vital's max) and whether its slots amplified or resisted it (`reception`).
+ * #864: two more entries feed turn events. `move` is who stepped where (from, to, sprint). `vital`
+ * is one actor's vital change this tick in numbers (`delta`, of which `regen` came back by regeneration), straight from
+ * core's turn record. These carry numbers, so the play session shows a `vital` entry only to the
+ * actor's own side (Darren, 2026-11-15) and keeps both out of the worded battle log.
  */
 
 import { BATTLE_LOG_ENTRY_SCHEMA } from "../../contracts/artifacts.ts";
@@ -83,6 +87,9 @@ export function buildBattleLogEntries({ battle, previous = {}, previousFieldHits
   const tick = Number.isInteger(battle.tick) ? battle.tick : 0;
   const casts = Array.isArray(battle.casts) ? battle.casts : [];
   const drafts = [];
+  for (const move of Array.isArray(battle.moves) ? battle.moves : []) {
+    drafts.push({ event: "move", sourceId: move.actorId, from: { ...move.from }, to: { ...move.to }, sprint: Boolean(move.sprint) });
+  }
   for (const cast of casts) {
     drafts.push({
       event: "cast",
@@ -97,6 +104,12 @@ export function buildBattleLogEntries({ battle, previous = {}, previousFieldHits
   // Playtest 2026-10-30: a lasting field (emit, draw) hurting someone is logged when it starts.
   for (const hit of fieldHitsOf(battle)) {
     if (!previousFieldHits.includes(fieldHitKey(hit))) drafts.push({ event: "field", ...hit });
+  }
+  for (const change of Array.isArray(battle.vitalChanges) ? battle.vitalChanges : []) {
+    const hit = change.hit ?? 0;
+    const regen = change.regen ?? 0;
+    if (hit === 0 && regen === 0) continue;
+    drafts.push({ event: "vital", targetId: change.actorId, vital: change.vital, delta: hit + regen, regen });
   }
   for (const take of Array.isArray(battle.takes) ? battle.takes : []) {
     drafts.push({ event: "take", sourceId: take.actorId, targetId: take.targetId, ...(take.taken ? { taken: take.taken } : {}) });

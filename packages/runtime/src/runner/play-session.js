@@ -78,6 +78,7 @@ import { actorGlyphs } from "../render/actor-glyphs.js";
 import { createPlaybackRuntime, createRuntimeCore } from "./core-facade.js";
 import { CAPTURED_INPUT_SCHEMA, PLAY_SAVE_SCHEMA } from "../contracts/artifacts.ts";
 import { ENGINE_VERSION } from "../contracts/engine-version.js";
+import { toTurnEvent } from "../contracts/turn-events.js";
 import { playSaveError, playStateDigest, validatePlaySave } from "./play-save.js";
 import { equippedActorAffinityKeys, exhaustedActorAffinityKeys, MAX_AFFINITY_SLOTS } from "../../../core-ts/src/state/actor-inventory.ts";
 import { unpayableActorAffinities } from "../../../core-ts/src/rules/actor-upkeep.ts";
@@ -348,6 +349,9 @@ export async function createPlaySession({
   let battleLogTick = -1;
   // #757: a running count of battle-log rows, so a turn result can hand out the cues of its own ticks.
   let battleLogSeq = 0;
+  // #864: the Annotator's move and vital entries, numbered on the same count. They feed turn events
+  // only, never the worded battle log or the cues.
+  const motionLog = [];
   // #692: the last band our side's hits read on each other actor, `{ band, tick }`. Shared by the party,
   // like the battle log it comes from; it ages and reads as unknown after ACTOR_CONDITION_FADE_TICKS.
   const conditions = new Map();
@@ -374,11 +378,21 @@ export async function createPlaySession({
       const involved = [entry.sourceId, entry.targetId].filter(Boolean);
       const cells = involved.map((id) => actors.find((actor) => actor.id === id)?.position).filter(Boolean);
       // Fog hides what no one on the party saw or was part of (#497).
+      const sees = (pid, cell) => !fog || Boolean(readVisible(pid)?.[cell.y]?.[cell.x]);
       const readers = partyIds.filter((pid) => involved.includes(pid) || !fog
         || escortsOf(pid).some((id) => involved.includes(id))
-        || cells.some((cell) => readVisible(pid)?.[cell.y]?.[cell.x]));
+        || cells.some((cell) => sees(pid, cell)));
       // #573: a party member's (or its minion's) field or cast that hurts one of its own side.
       const side = new Set([...partyIds, ...partyIds.flatMap(escortsOf)]);
+      if (entry.event === "move" || entry.event === "vital") {
+        battleLogSeq += 1;
+        // Numbers only for our own side (Darren, #864); a move's start only where the reader saw it.
+        const motionReaders = entry.event === "vital" ? (side.has(entry.targetId) ? partyIds.slice() : []) : readers;
+        const fromSeenBy = entry.event === "move"
+          ? motionReaders.filter((pid) => involved.includes(pid) || side.has(entry.sourceId) || sees(pid, entry.from)) : [];
+        motionLog.push({ seq: battleLogSeq, entry, readers: motionReaders, fromSeenBy });
+        continue;
+      }
       const ally = entry.sourceId !== entry.targetId && side.has(entry.sourceId) && side.has(entry.targetId);
       // #582 / AK-12: amount and net after regen when the party may read the target (own side),
       // or when the field is the party's own (so an enemy field hit names the vital it took —
@@ -397,6 +411,18 @@ export async function createPlaySession({
         ...(change ? { effect: { vital: change.vital, hit: change.hit, regen: change.regen } } : {}) });
     }
     if (battleLog.length > 500) battleLog.splice(0, battleLog.length - 500);
+    if (motionLog.length > 500) motionLog.splice(0, motionLog.length - 500);
+  }
+
+  /**
+   * #864: what happened after `since` that the seat may read, as turn events (`contracts/turn-events.js`),
+   * oldest first. Same reader filter as the cues; a move from an unseen cell carries no `from`.
+   */
+  function eventsSince(since) {
+    const rows = [...battleLog, ...motionLog].filter(({ seq, readers }) => seq > since && readers.includes(activeId))
+      .sort((left, right) => left.seq - right.seq);
+    return rows.map(({ seq, entry, ours, fromSeenBy }) => toTurnEvent(entry, seq, {
+      words: Boolean(ours), fromSeen: entry.event !== "move" || fromSeenBy.includes(activeId) }));
   }
 
   /** #757: the sound cues of the battle-log rows after `since` that the seat may read, oldest first. */
@@ -539,7 +565,7 @@ export async function createPlaySession({
     const mark = battleLogSeq;
     await stepWorld({ actorCommands, actorStrategies: { [actorId]: normalized } });
     commandLog.push({ tick: currentTick(), actorId, seat: activeId, order: structuredClone(normalized) });
-    return { ok: true, actorId, tick: currentTick(), strategy: normalized, status: status(), cues: cuesSince(mark) };
+    return { ok: true, actorId, tick: currentTick(), strategy: normalized, status: status(), cues: cuesSince(mark), events: eventsSince(mark) };
   }
 
   // Whether any hostile is in sight of a party member still in the level.
@@ -591,7 +617,7 @@ export async function createPlaySession({
       ran += 1;
     }
     if (ran === ticks && until && reached()) stoppedBy = until;
-    return { ticks: ran, stoppedBy, tick: currentTick(), status: status(), cues: cuesSince(mark) };
+    return { ticks: ran, stoppedBy, tick: currentTick(), status: status(), cues: cuesSince(mark), events: eventsSince(mark) };
   }
 
   /** Replay one logged tick the seated actor spent on its own strategy. */
@@ -664,7 +690,7 @@ export async function createPlaySession({
     if (after && after.lifecycle === "alive") {
       remember(actorId, after, readingOf(after, actorId, fog));
     }
-    return { tick: currentTick(), rejected: [], status: status(), cues: cuesSince(mark),
+    return { tick: currentTick(), rejected: [], status: status(), cues: cuesSince(mark), events: eventsSince(mark),
       accepted: [{ actorId, tick: currentTick(), kind: "inspect", params: { targetId } }] };
   }
 
@@ -744,7 +770,7 @@ export async function createPlaySession({
     const rejected = (applyFrame.preCoreRejections || [])
       .filter((entry) => entry?.action?.actorId === actorId && isGameplayAction(entry.action))
       .map(toPlayRejection);
-    return { tick: currentTick(), accepted, rejected, status: status(), cues: cuesSince(mark) };
+    return { tick: currentTick(), accepted, rejected, status: status(), cues: cuesSince(mark), events: eventsSince(mark) };
   }
 
   // Kinds that run a tick of their own or change the seat: they cannot ride in a shared tick.
@@ -790,7 +816,7 @@ export async function createPlaySession({
       .filter((action) => ids.includes(action?.actorId) && isGameplayAction(action)).map(toPlayAction));
     rejected.push(...(applyFrame.preCoreRejections || [])
       .filter((entry) => ids.includes(entry?.action?.actorId) && isGameplayAction(entry.action)).map(toPlayRejection));
-    return { tick: currentTick(), accepted, rejected, status: status(), cues: cuesSince(mark) };
+    return { tick: currentTick(), accepted, rejected, status: status(), cues: cuesSince(mark), events: eventsSince(mark) };
   }
 
   // The party as the UI lists it: who is seated, where each member stands, and the
@@ -1013,6 +1039,8 @@ export async function createPlaySession({
     captureInput,
     save,
     stateDigest,
+    // #864: the seat's turn events after `seq` (0 for every one kept), as `result.events` hands them out.
+    eventsSince: (seq = 0) => eventsSince(seq),
     playerActorId: playerId,
     viabilityReport,
     pricingReport,
