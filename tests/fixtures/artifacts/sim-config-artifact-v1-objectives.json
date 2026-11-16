@@ -1,0 +1,108 @@
+{
+  "schema": "agon/SimConfigArtifact",
+  "schemaVersion": 1,
+  "meta": {
+    "id": "sim_config_objectives",
+    "runId": "run_fixture",
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "producedBy": "fixture"
+  },
+  "planRef": {
+    "id": "plan_basic",
+    "schema": "agon/PlanArtifact",
+    "schemaVersion": 1
+  },
+  "budgetReceiptRef": {
+    "id": "budget_receipt_basic",
+    "schema": "agon/BudgetReceiptArtifact",
+    "schemaVersion": 1
+  },
+  "seed": 42,
+  "executionPolicy": {
+    "schema": "agon/ExecutionPolicy",
+    "schemaVersion": 1,
+    "ordering": "round_robin",
+    "params": {
+      "actorSortKey": "id"
+    }
+  },
+  "flags": {
+    "demo": true
+  },
+  "layout": {
+    "kind": "grid",
+    "data": {
+      "width": 2,
+      "height": 2
+    }
+  },
+  "constraints": {
+    "categoryCaps": {
+      "caps": {
+        "movement": 10
+      }
+    },
+    "limits": {
+      "maxTicks": 5
+    }
+  },
+  "objectives": [
+    {
+      "id": "slay",
+      "kind": "defeat",
+      "params": {
+        "role": "warden"
+      },
+      "required": true
+    },
+    {
+      "id": "boss",
+      "kind": "defeat",
+      "params": {
+        "actorIds": [
+          "warden_1"
+        ]
+      },
+      "required": false
+    },
+    {
+      "id": "hold",
+      "kind": "survive",
+      "params": {
+        "ticks": 20
+      },
+      "required": false
+    },
+    {
+      "id": "loot",
+      "kind": "collect",
+      "params": {
+        "count": 2,
+        "holdingKind": "vital"
+      },
+      "required": false
+    },
+    {
+      "id": "guide",
+      "kind": "escort",
+      "params": {
+        "actorId": "ally_1"
+      },
+      "required": false
+    },
+    {
+      "id": "out",
+      "kind": "reach_exit",
+      "params": {},
+      "required": true
+    },
+    {
+      "id": "clock",
+      "kind": "within",
+      "params": {
+        "ticks": 60
+      },
+      "required": true
+    }
+  ]
+}
