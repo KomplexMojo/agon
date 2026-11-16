@@ -107,6 +107,24 @@ still reproduces the state resumes normally. `validatePlaySave` checks a save's 
 controller has `save(meta)` and a `resume: { levelIndex, save }` option that starts the level fresh, with a message,
 when the save is stale.
 
+### Carrying a character between levels
+
+By default every level starts with the character it was authored with. To keep the player's character from one
+level to the next, take it as it leaves and hand it to the next session:
+
+```js
+const character = session.characterState({ meta });   // once status().exited
+const next = await createPlaySession({ simConfig, initialState, arrivingCharacter: character });
+```
+
+The character is an `agon/CharacterState`. Its affinities, slots, what is equipped and each vital's max and regen
+carry over. Vitals arrive full, and a grant that lasts one level does not carry. It takes the next level's player
+seat, so the position and motivations are that level's own. The Allocator prices it against the character the
+level was built for and adds the difference to `next.pricingReport` as a `character_arrived` finding; the level
+itself is not rebalanced. A capture records which character it started with, and replay refuses a different
+one. With the game controller, `createGameController({ carry: true })` does this on each next level, and
+`arrivingCharacter()` returns the character to keep beside a save (`resume: { levelIndex, save, arrivingCharacter }`).
+
 ### Wording
 
 The game controller's sentences (refusals, battle and vital lines, loot and order replies) are data first.
