@@ -472,6 +472,16 @@ finished. Both surfaces are stateless and pure;
 neither mutates caller-owned layout or object data. Hazard affinities become owned equipment with
 the authored pair active; category-specific hazard/resource collections do not enter SimConfig.
 
+### Level objectives (#867, 2026-11-16)
+
+`objective-authoring.js` owns the `--objective` grammar (`parseObjectiveSpec`) and the check that a
+level can satisfy its objectives (`checkLevelObjectives`: named actors exist, a role has an actor,
+enough holdings outside the party to collect). `withLevelObjectives` puts the checked list on the
+SimConfig once the roster is built, or throws with every reason; no objectives leaves the SimConfig
+as it was. All three are on the controller. The vocabulary and shape check are
+`contracts/objectives.js`; judging them during play is the Moderator's. Objectives are not priced.
+Pinned by `tests/personas/configurator/configurator-objectives.test.js`.
+
 ### Relational placement constraints (#301, 2026-10-18)
 
 `placement-constraints.js` owns the shape, the `--place` grammar (`parsePlacementConstraint`,

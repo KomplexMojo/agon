@@ -373,7 +373,7 @@ single multi-object entrypoint for automation callers.
 
 Inputs/outputs:
 - Input: optional `--text`, repeatable `--room`, `--floor-tile`, `--hazard`,
-  `--resource`, `--delver`, `--warden`, `--place` and `--tactic`, optional `--seed`, `--goal`, `--dungeon-affinity`,
+  `--resource`, `--delver`, `--warden`, `--place`, `--tactic` and `--objective`, optional `--seed`, `--goal`, `--dungeon-affinity`,
   optional `--budget-tokens`, optional `--budget` + `--price-list`, plus standard
   `--run-id`, `--created-at`, `--out-dir`.
 - With no budget input (no `--budget-tokens`, `--budget`, or budget in the text), the Allocator's reference
@@ -553,6 +553,11 @@ Inputs/outputs:
   (`actorFixture`) replays a recorded reply; live needs `AGON_LLM_LIVE=1`. No model or an unreadable reply is an error,
   there is no seeded cast to fall back to, and it cannot share a fixture with `--tactic llm`. `actorPlan` in the result
   holds the specs, so typing them as `--delver`/`--warden` rebuilds the level with no model.
+  `--objective` (repeatable, `objectives` on `agon_create`; #867) sets what the level asks of the player, in place of
+  the default (reach the exit): `kind=<reach_exit|defeat|survive|collect|escort|within>[;id=<id>][;required=false]`
+  plus the kind's params, `role=<role>` or `actorIds=<a>,<b>` (defeat), `ticks=<n>` (survive, within), `count=<n>`
+  and optional `holdingKind=vital|affinity` (collect), `actorId=<id>` (escort). The Configurator refuses an objective
+  the built level cannot satisfy, naming it; the SimConfig carries the list and the play session reports it.
   `--seed N` (`seed` on `agon_create`) fixes the build seed; a tactic with no `--seed` draws one, and the result reports
   it as `seed`, so the same flags plus `--seed` rebuild the level exactly. `--place` also takes `outOfSight=room:<id>`:
   a cell no doorway of that room can see, by core's line of sight.

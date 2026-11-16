@@ -42,6 +42,10 @@ node node_modules/@agon-engine/engine/dist/adapters-cli/cli/agon.mjs create \
   --out-dir ./levels/first
 ```
 
+A level asks the player to reach the exit unless it says otherwise. `--objective` (repeatable) sets other goals, for
+example `--objective "kind=defeat;role=warden"` or `--objective "kind=survive;ticks=40"`, and `kind=within;ticks=<n>`
+puts a turn limit on the rest. The full grammar is in the `agon` README; a level that cannot meet an objective is refused.
+
 The run directory holds the artifacts a game uses: `sim-config.json`, `initial-state.json`, `resource-bundle.json`
 and a budget receipt. A level with no receipt still plays, but the session reports it as unpriced
 (`session.pricingReport`), so a game can warn about hand-written content.

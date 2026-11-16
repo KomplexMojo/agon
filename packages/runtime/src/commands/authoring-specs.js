@@ -47,6 +47,7 @@ export function parseArgs(argv) {
     "resource",
     "place",
     "tactic",
+    "objective",
     "file",
   ]);
   function pushArg(key, value) {
@@ -1543,6 +1544,7 @@ export function createAuthoringSpecs({ makeId, readStrategyFile = NO_STRATEGY_FI
       "warden",
       "place",
       "tactic",
+      "objective",
       "actors",
       "fixture",
       "model",
@@ -1577,7 +1579,7 @@ export function createAuthoringSpecs({ makeId, readStrategyFile = NO_STRATEGY_FI
       unknown.push(...args._);
     }
     if (unknown.length > 0) {
-      throw new Error(`${command} only accepts --text, --room, --floor-tile, --hazard, --resource, --delver, --warden, --place, --tactic, --actors, --fixture, --model, --base-url, --seed, --goal, --dungeon-affinity, --budget-tokens, --dungeon-budget-tokens, --delver-budget-tokens, --grade, --budget, --price-list, --out-dir, --run-id, --created-at, --emit-intermediates${allowDryRun ? ", and --dry-run" : ""}. Unknown: ${unknown.join(", ")}`);
+      throw new Error(`${command} only accepts --text, --room, --floor-tile, --hazard, --resource, --delver, --warden, --place, --tactic, --objective, --actors, --fixture, --model, --base-url, --seed, --goal, --dungeon-affinity, --budget-tokens, --dungeon-budget-tokens, --delver-budget-tokens, --grade, --budget, --price-list, --out-dir, --run-id, --created-at, --emit-intermediates${allowDryRun ? ", and --dry-run" : ""}. Unknown: ${unknown.join(", ")}`);
     }
   }
 
@@ -1850,6 +1852,11 @@ export function createAuthoringSpecs({ makeId, readStrategyFile = NO_STRATEGY_FI
       .map((entry) => String(entry || "").trim())
       .filter(Boolean)
       .map((value, index) => configurator.parsePlacementConstraint(value, index));
+    // #867: level objectives, read by the Configurator's grammar; it checks them against the built level.
+    const objectives = normalizeList(args.objective)
+      .map((entry) => String(entry || "").trim())
+      .filter(Boolean)
+      .map((value, index) => configurator.parseObjectiveSpec(value, index));
     // #396: tactics, read by the Director's own grammar. A tactic with no --seed draws one
     // here, in the adapter, so no persona ever reads randomness.
     const tacticSpecs = normalizeList(args.tactic)
@@ -2253,6 +2260,7 @@ export function createAuthoringSpecs({ makeId, readStrategyFile = NO_STRATEGY_FI
       parsedWardens,
       placement: placementConstraints,
       tactics,
+      ...(objectives.length > 0 ? { objectives } : {}),
       ...(buildSeed !== undefined ? { seed: buildSeed } : {}),
       },
     };
