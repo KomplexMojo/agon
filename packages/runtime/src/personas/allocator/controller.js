@@ -166,6 +166,8 @@ export function createAllocatorPersona({
     view,
     pricing: services.pricing,
     reportLevelPricing: services.reportLevelPricing,
+    // #868 — a carried character priced against the seat the level was priced for (report only).
+    priceArrivingCharacter: services.priceArrivingCharacter,
     assessReceiptForUse: services.assessReceiptForUse,
     priceLevelOverrides: services.priceLevelOverrides,
     castPricesFromLegacyTiers: services.castPricesFromLegacyTiers,

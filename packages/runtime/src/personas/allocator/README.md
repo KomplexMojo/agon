@@ -123,6 +123,15 @@ the finding (`session.pricingReport`, shown as a warning by the ASCII game). `ca
 loads a pre-#232 five-tier `castMana` table on the one cast curve; the run loader (`runner/core-setup.mjs`)
 asks for it here rather than translating prices itself.
 
+### It prices a character carried in from the last level (#868)
+
+`priceArrivingCharacter({ authoredActor, arrivingActor })` quotes the seat the level was priced for
+and the character that arrives in it with `pricing.quoteActor` (the character sheet's quote), and
+returns one finding: `character_arrived` with `authoredTokens`, `arrivingTokens` and `deltaTokens`,
+or `character_unpriced` naming the missing prices. It reports; it does not rebalance the level
+(a follow-up once the report has been looked at). Pinned by
+`tests/personas/allocator/allocator-arriving-character.test.js`.
+
 ### It judges and issues sandbox receipts (#277)
 
 `assessReceiptForUse(receipt)` accepts a receipt only when it is a v1 `BudgetReceiptArtifact` with an
