@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 The control machine (this Mac) keeps prompts, tunnels, and result files; inference
 runs on the remote Ubuntu GPU box (or, with `--local`, the Mac's own Ollama). The
-farming is done entirely by the repo CLI `tools/remote-ollama-control/bin/remote-ollama-mac`,
+farming is done entirely by the CLI `tools/remote-ollama-control/bin/remote-ollama-mac` in the private KomplexMojo/agon-ops repository (#871; run every command below from an agon-ops checkout),
 which is harness-neutral — it reads the operator's untracked `config/llm-host.env`
 (and/or `LLM_*` environment variables) plus `~/.ssh/config`, and opens an SSH tunnel
 to the box. Nothing Cursor-specific is required beyond running these commands.

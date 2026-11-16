@@ -29,7 +29,7 @@ function formatSites(sites) {
 
 test("every agon_create throw site without interpolation is an explicitly allowlisted, justified exception", async () => {
   const { surveyErrorMessages } = await import(
-    "../../tools/benchmark/survey-agon-create-error-messages.mjs"
+    "../../scripts/testing/survey-agon-create-error-messages.mjs"
   );
   const results = surveyErrorMessages({ repoRoot: ROOT });
   const flagged = results.filter((r) => r.disposition !== "has-interpolation");

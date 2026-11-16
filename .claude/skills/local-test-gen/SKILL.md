@@ -38,7 +38,7 @@ Flags:
 - `--keep-failing-logic` — keep syntactically valid failing tests for application-bug triage; **omit for model evaluation**
 
 Remote dual-GPU run, and model-evaluation against one file. Addresses resolve
-from the untracked `tools/remote-ollama-control/config/llm-host.env` — on the
+from the untracked `tools/remote-ollama-control/config/llm-host.env` (an agon-ops checkout beside agon, #871) — on the
 same local network as the host, use `--route internal` and drop
 `--external-host` entirely:
 

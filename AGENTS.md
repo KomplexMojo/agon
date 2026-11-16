@@ -332,6 +332,10 @@ behaviour, before handing off. Agents may run these.
 - Their manifest records `matrix: "local-unversioned"`, so a local result can never be mistaken for
   a qualifying baseline or published as one. That property is the licence for this exemption; do not
   remove it.
+- **The benchmark tooling lives in the private KomplexMojo/agon-ops repository** (#871): the harness
+  (`tools/remote-ollama-control`, `tools/benchmark`), the preflight, the result reader and their
+  tests. Every path in this section is relative to an agon-ops checkout beside agon. agon keeps only
+  the deterministic failure-corpus replay (`tests/integration/benchmark-failure-corpus-replay.test.js`).
 - **Run `scripts/benchmark-preflight.sh` first.** Every way this setup breaks is silent — an unset
   `OLLAMA_MODELS` makes `ollama list` return empty rather than erroring, and a stale identity pin
   compares incomparable runs without complaint. The preflight is the difference between a failed run
@@ -362,8 +366,8 @@ changes, never inside the loop. It is where comparison and qualification happen.
 the working clones, or the program docs below while the Codex effort is in flight — that includes
 committing its loose working-tree changes, moving files into git, or tidying. Report state; change nothing.
 
-- **The catalog and harness are under source control**, in this repo on `codex/benchmark-catalog` (working clone `~/Documents/GitHub/agon-benchmark`). 28 tracked files under `tools/remote-ollama-control/benchmarks/` — the canonical content-gen catalog is **100 scenarios** (25 simple · 25 affinity · 25 complex · 25 constrained) plus the execution and abstract-plan catalogs and their schemas. Results publish to the `benchmark-results` branch.
-- **That branch has not merged**: 9 ahead of `main`, 20 behind. `main` still carries the older harness under `tools/`, so Agon `main` is not where benchmark state is read.
+- **The catalog and harness are under source control**, on agon's `codex/benchmark-catalog` branch (working clone `~/Documents/GitHub/agon-benchmark`). 28 tracked files under `tools/remote-ollama-control/benchmarks/` — the canonical content-gen catalog is **100 scenarios** (25 simple · 25 affinity · 25 complex · 25 constrained) plus the execution and abstract-plan catalogs and their schemas. Results publish to the `benchmark-results` branch.
+- **That branch has not merged**: 9 ahead of `main`, 20 behind. agon `main` no longer carries a harness; the copy that was under `tools/` is in agon-ops (#871).
 - `codex/benchmark-e3` exists **only locally** (`~/Documents/GitHub/agon-benchmark-e3`), with no commits of its own — its E3 work is entirely uncommitted working-tree change.
 - **The program roadmap and execution record are NOT under source control:** `local-codex/Plan-Benchmark.md` and `local-codex/Documentation-Benchmark.md` — `local-codex/` is gitignored, and unlike `Plan.md` these two are real files, not vault symlinks. They exist on one machine with no backup.
 - Run output (`tools/remote-ollama-control/results/`, 7.6 GB) is gitignored by design and stays that way.
