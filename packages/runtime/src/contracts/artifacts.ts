@@ -1204,6 +1204,22 @@ export interface ExecutionPolicyV1 {
  * Executable simulation configuration. Immutable once execution begins.
  * This is consumed by the runtime runner and supplied to `core-ts` at initialization.
  */
+/** #867: one level objective. `params` by kind are listed in `contracts/objectives.js`. */
+export interface LevelObjectiveV1 {
+  id: string;
+  kind: "reach_exit" | "defeat" | "survive" | "collect" | "escort" | "within";
+  params: {
+    actorIds?: string[];
+    role?: string;
+    ticks?: number;
+    count?: number;
+    holdingKind?: "vital" | "affinity";
+    actorId?: string;
+  };
+  /** false: an optional objective, for score; it never decides the outcome. */
+  required: boolean;
+}
+
 export interface SimConfigArtifactV1 {
   schema: typeof SIM_CONFIG_SCHEMA;
   schemaVersion: 1;
@@ -1236,6 +1252,13 @@ export interface SimConfigArtifactV1 {
 
   /** Configurator-authored vital costs, separate from Allocator token pricing. */
   actionCosts: ActorTurnCosts;
+
+  /**
+   * #867: what the level asks of the player, from the closed vocabulary in `contracts/objectives.js`.
+   * Absent means one required `reach_exit`, the only goal before objectives existed, so every older
+   * level plays as it did. The Configurator validates the list; the Moderator evaluates it each tick.
+   */
+  objectives?: LevelObjectiveV1[];
 
   /**
    * Externally supplied caps/limits for core enforcement.

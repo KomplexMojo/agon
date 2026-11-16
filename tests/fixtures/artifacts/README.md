@@ -24,6 +24,10 @@ The lists below name the fixtures with a documented purpose; the directory holds
 - action-sequence-v1-mvp-to-exit.json: ordered move actions (east, east, south) walking the actor from spawn to the exit.
 - frame-buffer-log-v1-mvp.json: ASCII frame buffers per tick mirroring the action path, keyed by actor id and sharing the same run/config refs.
 
+## Level objectives (#867)
+- sim-config-artifact-v1-objectives.json: the basic config with one objective of every kind (`contracts/objectives.js`).
+- invalid/sim-config-artifact-v1-objective-unknown-kind.json, invalid/sim-config-artifact-v1-objective-survive-zero.json: shape refusals.
+
 ## Intent + Planning
 - intent-envelope-v1-basic.json: intake boundary request; used to test intent parsing.
 - plan-artifact-v1-basic.json: structured plan referencing the intent.
