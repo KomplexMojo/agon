@@ -96,8 +96,8 @@ export const PLAY_COMMAND_KINDS = ACTOR_COMMAND_KINDS;
 export const PLAY_SIGHT = Object.freeze({ VISIBLE: "v", REMEMBERED: "r", UNKNOWN: "u" });
 
 // Whether a loaded level's actors meet the viability floor is the Configurator's question.
-const reportActorViabilityFloor = createConfiguratorPersona({ clock: UNUSED_CLOCK })
-  .authorCandidates.reportActorViabilityFloor;
+const sessionConfigurator = createConfiguratorPersona({ clock: UNUSED_CLOCK });
+const reportActorViabilityFloor = sessionConfigurator.authorCandidates.reportActorViabilityFloor;
 
 export const PLAY_DIRECTIONS = Object.freeze(EIGHT_WAY_DELTAS.map((delta) => delta.direction));
 /** Each direction's step, for a UI moving an aim cursor over the board (#413). */
@@ -155,6 +155,9 @@ export const COMPANION_MOTIVATION = "friendly";
  *                                     the player leaves. The session still keeps what was seen for
  *                                     the rooms notebook; it just never reaches the board.
  * @param {string}   [args.glyphSet]   "unicode" (default) or "ascii": the wall glyph set (#574)
+ * @param {object}   [args.arrivingCharacter] an agon/CharacterState carried in from the last level
+ *                                     (#868): the Configurator seats it as the player (holdings carry,
+ *                                     vitals full) and the Allocator's price of it joins `pricingReport`
  */
 export async function createPlaySession({
   simConfig,
@@ -169,9 +172,17 @@ export async function createPlaySession({
   costing = null,
   glyphSet = "unicode",
   hibernationRadius,
+  arrivingCharacter,
 } = {}) {
   if (!simConfig || !initialState) {
     throw new Error("createPlaySession: simConfig and initialState are required");
+  }
+  // #868: a character carried in from the last level takes the player's seat. The level as
+  // authored is kept for the Allocator's comparison; everything below plays the seated one.
+  const authoredInitialState = initialState;
+  if (arrivingCharacter) {
+    initialState = sessionConfigurator.seatArrivingCharacter({ initialState, characterState: arrivingCharacter,
+      seatId: playerActorId ?? defaultPlayerActorId(initialState) });
   }
   const sourceActors = (Array.isArray(initialState.actors) ? initialState.actors : [])
     .filter((actor) => typeof actor?.id === "string" && actor.id);
@@ -198,8 +209,14 @@ export async function createPlaySession({
   // A hand-written level is played as written; actors below the floor are only reported.
   const viabilityReport = Object.freeze(reportActorViabilityFloor(initialState).map((finding) => Object.freeze(finding)));
   // A level the Allocator never priced is played too, and reported (#279).
-  const allocator = createAllocatorPersona({ clock: UNUSED_CLOCK });
-  const pricingReport = Object.freeze(allocator.reportLevelPricing(simConfig).map((finding) => Object.freeze(finding)));
+  const allocator = createAllocatorPersona({ clock: UNUSED_CLOCK, normalizeMotivations: sessionConfigurator.normalizeMotivations });
+  const pricingReport = Object.freeze([
+    ...allocator.reportLevelPricing(simConfig),
+    ...(arrivingCharacter ? [allocator.priceArrivingCharacter({
+      authoredActor: authoredInitialState.actors.find((actor) => actor.id === playerId),
+      arrivingActor: initialState.actors.find((actor) => actor.id === playerId),
+    })] : []),
+  ].map((finding) => Object.freeze(finding)));
   // The cast prices core charges this level, as the Allocator reads them, so each slot can show its cast's mana.
   const castManaBase = allocator.castPricesFromLegacyTiers(simConfig.actionCosts ?? null)?.castManaBase;
   const castPrices = castManaBase && typeof castManaBase === "object" ? { castManaBase } : undefined;
@@ -327,6 +344,8 @@ export async function createPlaySession({
   // #867: the facts the Moderator judges objectives from. Kept whole (the event log above is
   // trimmed), each written once, so status() reads the same at any tick of a replay.
   const objectiveFacts = { defeatedAt: {}, exitedAt: {}, takes: [] };
+  // #868: the vital holdings the player took that last one level, taken back off when it leaves.
+  const seatLevelGrants = [];
   function recordEvents(before) {
     const tick = currentTick();
     const apply = runtime.getTickFrames().filter((frame) => frame?.phaseDetail === "apply").at(-1) || {};
@@ -343,6 +362,9 @@ export async function createPlaySession({
       const holding = actors.find((entry) => entry.id === action.params?.targetId)?.holdings?.find((entry) => entry.id === action.params?.holdingId);
       const holdingKind = holding?.kind ?? (String(action.params?.holdingId ?? "").startsWith("affinity:") ? "affinity" : "vital");
       objectiveFacts.takes.push({ tick, actorId: action.actorId, holdingKind });
+      if (action.actorId === playerId && holding?.kind === "vital" && holding.permanenceMode === "level") {
+        seatLevelGrants.push({ vitals: structuredClone(holding.vitals) });
+      }
     }
     for (const [id, lifecycle, exited] of before) {
       const actor = actors.find((entry) => entry.id === id);
@@ -1020,7 +1042,8 @@ export async function createPlaySession({
       meta: { producedBy: "play-session", ...meta },
       source: { adapter: PLAYER_CAPTURE_ADAPTER },
       contentType: "application/json",
-      payload: { playerActorId: playerId, activeActorId: activeId, commands: structuredClone(commandLog) },
+      payload: { playerActorId: playerId, activeActorId: activeId, commands: structuredClone(commandLog),
+        ...(arrivingCharacter ? { characterStateId: arrivingCharacter.meta?.id ?? null } : {}) },
     };
   }
 
@@ -1047,7 +1070,20 @@ export async function createPlaySession({
     };
   }
 
+  /**
+   * #868: the player's character as it leaves this level, an agon/CharacterState the next level
+   * can seat (`createPlaySession({ arrivingCharacter })`). The Configurator writes it; only a
+   * player who has left by the exit has one to carry.
+   */
+  function characterState({ meta } = {}) {
+    if (!runtime.hasActorExited(playerId)) throw new Error("characterState: the player has not left the level");
+    const actor = readSnapshot().actors.find((entry) => entry.id === playerId);
+    return sessionConfigurator.characterStateFromActor({ actor, levelGrants: seatLevelGrants, meta,
+      fromLevel: { simConfigId: simConfig.meta?.id ?? null, initialStateId: initialState.meta?.id ?? null } });
+  }
+
   return {
+    characterState,
     act,
     actTick,
     order,
@@ -1449,6 +1485,14 @@ export async function replayPlaySession({ simConfig, initialState, capturedInput
   }
   const { playerActorId, activeActorId, commands } = capturedInput.payload ?? {};
   if (!Array.isArray(commands)) throw new Error("replayPlaySession: capture has no commands");
+  // #868: a capture of a level entered with a carried character replays only with that character.
+  const startedWith = capturedInput.payload?.characterStateId;
+  const given = options.arrivingCharacter ? options.arrivingCharacter.meta?.id ?? null : undefined;
+  if (startedWith !== given) {
+    throw new Error(startedWith === undefined
+      ? `replayPlaySession: the capture started with the level's own character, not ${given}`
+      : `replayPlaySession: the capture started with character ${startedWith}, not ${given ?? "the level's own"}`);
+  }
   const session = await createPlaySession({ simConfig, initialState, playerActorId, ...options });
   for (const entry of commands) {
     let result;

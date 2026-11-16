@@ -561,6 +561,34 @@ export function attachAllocatorServices({
   }
 
   /**
+   * #868: a character carried in from the last level, priced against the seat the level was
+   * priced for. Both are quoted line by line with the persona's own prices (`quoteActor`); the
+   * finding reports the difference and changes nothing (first step: report, not rebalance).
+   * A quote with missing prices is reported as unpriced rather than guessed.
+   */
+  function priceArrivingCharacter({ authoredActor, arrivingActor } = {}) {
+    const quote = (actor) => pricing.quoteActor({
+      type: "delver", vitals: actor?.vitals ?? {}, affinities: actor?.affinities ?? [],
+      affinitySlots: actor?.affinitySlots ?? 1, motivations: actor?.motivations ?? [],
+    });
+    const authored = quote(authoredActor);
+    const arriving = quote(arrivingActor);
+    const errors = [...new Set([...(authored.errors ?? []), ...(arriving.errors ?? [])])];
+    if (errors.length > 0) {
+      return { code: "character_unpriced", actorId: arrivingActor?.id ?? null,
+        message: `The arriving character could not be priced: ${errors.join("; ")}.` };
+    }
+    const delta = arriving.cost - authored.cost;
+    const compared = delta === 0 ? `the same as the level was priced for`
+      : `${Math.abs(delta)} tokens ${delta > 0 ? "more" : "less"} than the ${authored.cost} the level was priced for`;
+    return {
+      code: "character_arrived", actorId: arrivingActor?.id ?? null,
+      authoredTokens: authored.cost, arrivingTokens: arriving.cost, deltaTokens: delta,
+      message: `The character carried in is worth ${arriving.cost} tokens, ${compared}.`,
+    };
+  }
+
+  /**
    * #277: whether a caller-supplied receipt can stand for spend. The Allocator judges its own
    * receipts; the sandbox used to check them in glue, differently in the CLI and the MCP.
    * Only an approved receipt with a non-negative remainder and its line items is usable.
@@ -642,6 +670,7 @@ export function attachAllocatorServices({
   return {
     pricing,
     reportLevelPricing,
+    priceArrivingCharacter,
     assessReceiptForUse,
     priceLevelOverrides,
     castPricesFromLegacyTiers,
