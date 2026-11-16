@@ -9,6 +9,8 @@ import { planEffectFulfillment, FulfillmentDispositions } from "./effect-fulfill
 // controllers only).
 export { FulfillmentDispositions };
 export { describeActorOrdering, orderActorsByIntention, orderActorsForDecision } from "./actor-ordering.js";
+// #867: level objectives and the run outcome are end-of-run policy, so the Moderator's.
+export { evaluateLevelObjectives } from "./objective-evaluation.js";
 export {
   DEFAULT_ACTOR_HIBERNATION_RADIUS,
   chebyshevTileDistance,
