@@ -2,7 +2,8 @@
  * G1 annotator/battle-log (A2 + A5) — #554.
  *
  * The battle log is the Annotator's: entries are derived from what the tick applied, stamped
- * `producedBy: "annotator"`, and carry no vitals (#497). ABLATION: with the Annotator silent the
+ * `producedBy: "annotator"`, and the worded ones carry no vitals (#497; #864 adds numeric `vital` entries
+ * that turn events show only to the actor's own side). ABLATION: with the Annotator silent the
  * session's log is empty — play-session keeps no fallback that words casts itself (it holds them).
  */
 const assert = require("node:assert/strict");

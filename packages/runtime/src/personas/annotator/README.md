@@ -55,7 +55,10 @@ else ticked — it needs CR.8's refusal, and this ablation will not catch it.
 **The battle log (#554) is the same shape as per-tick telemetry.** On the EMIT phase the Annotator
 turns what the tick applied (casts, takes, lifecycle changes, exits; supplied on the observation as
 `battle`) into `agon/BattleLogEntry` artifacts, carried on the tick's telemetry as
-`battleLog`. Entries are structured and carry no vitals: a cast shows its affinity and whether it
+`battleLog`. Two entries feed turn events only (#864): `move` (from `battle.moves`: who stepped where,
+and whether it sprinted) and `vital` (from `battle.vitalChanges`: one actor's vital change in
+numbers, `delta` and its `regen` part). `play-session` keeps both out of the worded log and the cues,
+and shows a `vital` entry only to the actor's own side. The worded entries carry no vitals: a cast shows its affinity and whether it
 struck (#497). A cast that struck another also carries words for how it landed (#692): `condition`,
 a band on the target's defeat vital after the tick (`unhurt` / `hurt` / `bloodied` / `near_defeat`),
 `hit` (`glancing` / `solid` / `crushing` against the struck vital's max) and `reception`

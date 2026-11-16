@@ -63,7 +63,22 @@ const view = session.view();   // the board, sight, HUD data and legend for this
 
 The session runs the real tick loop. Your command is the player's decision; every other actor decides through its
 own persona, so opponents, hazards and companions all act under the same rules. `result` reports what was accepted
-or rejected, and sound and animation cues for the turn. `session.status()` says whether the run is won, lost or still
+or rejected, and sound and animation cues for the turn. `result.events` lists what happened in the turn as data, so a
+client can animate without comparing two views. Each event has `tick`, `seq` (its order in the run) and `event`, which is
+one of `TURN_EVENT_KINDS` (on `/vocabulary`):
+
+| `event` | Fields |
+|---|---|
+| `move` | `sourceId`, `from` (left out when you did not see where it came from), `to`, `sprint` |
+| `cast` | `sourceId`, `targetId`, `kind`, `expression`, `struck`, `reception`; on your side's hit, the words `hit` and `condition` |
+| `field` | `sourceId`, `targetId`, `kind`, `expression`: a lasting field started hurting `targetId` |
+| `vital` | `targetId`, `vital`, `delta`, `regen` (the part of `delta` that regeneration gave back). Only for your own side |
+| `take` | `sourceId`, `targetId`, `taken` |
+| `defeat` | `targetId`, `defeatVital`, and the `sourceId`, `kind` and `expression` that did it |
+| `exit` | `targetId` |
+
+Under fog only what your party saw or took part in is listed. `session.eventsSince(seq)` returns the events after a
+`seq`, and the game controller's `frame().events` holds the last call's. `session.status()` says whether the run is won, lost or still
 going. `captureInput()` records the commands, and `replayPlaySession` re-simulates them, which is how a run is
 verified or shared.
 

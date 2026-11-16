@@ -2034,7 +2034,8 @@ export interface BattleLogEntryV1 {
   meta: ArtifactMeta;
   tick: number;
   /** field: a lasting field (emit, draw) of `sourceId` started hurting `targetId` this tick (logged once, when it starts). */
-  event: "cast" | "take" | "defeat" | "exit" | "field";
+  /** move and vital (#864) feed turn events; the worded battle log leaves them out. */
+  event: "cast" | "take" | "defeat" | "exit" | "field" | "move" | "vital";
   /** Who acted (a defeat's source is whoever's cast last landed on it, else whose emit field it stood in). */
   sourceId?: string;
   /** Who it was done to (the actor that left, for a defeat or an exit). */
@@ -2046,6 +2047,14 @@ export interface BattleLogEntryV1 {
   expression?: string;
   /** cast: whether it landed on another actor. */
   struck?: boolean;
+  /** move (#864): where `sourceId` stood before the tick and where the move put it; sprint when it took two steps. */
+  from?: { x: number; y: number };
+  to?: { x: number; y: number };
+  sprint?: boolean;
+  /** vital (#864): `targetId`'s vital that changed this tick by `delta`; `regen` is the part regeneration gave back (the rest is casts, fields and upkeep). */
+  vital?: string;
+  delta?: number;
+  regen?: number;
   /**
    * #692, cast that struck another: how hurt the target looks after the tick, as a band on its defeat
    * vital (`unhurt` >75% of max, `hurt` >50%, `bloodied` >25%, else `near_defeat`); words only, never vitals.

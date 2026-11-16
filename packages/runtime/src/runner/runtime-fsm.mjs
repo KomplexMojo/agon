@@ -1178,6 +1178,8 @@ export function createFsmRuntime({
     const acceptedActions = [];
     const preCoreRejections = [];
     const outcomes = [];
+    // #864: each accepted move with where it started, for the Annotator's move entries (facts only).
+    const moves = [];
     const defaultTick = tick;
     const actorTurn = actorRegistry && actorCosts
       ? createActorTurn(actorRegistry, defaultTick, { ...actorCosts, persistentUpkeep: [...persistentAffinityUpkeepTable] },
@@ -1209,12 +1211,17 @@ export function createFsmRuntime({
           reject(action, "unsupported_action_kind");
           continue;
         }
+        const from = normalized.kind === "move" ? actorRegistry.getActor(normalized.actorId)?.position : null;
         if (!actorTurn.apply(normalized)) {
           // Core names the reason when it can (BlockedByWall, ActorCollision, ...),
           // in the same `prefix:Name` form as the old engine's move rejections.
           const why = actorTurn.lastRejection();
           reject(action, why ? `actor_action_rejected_by_core:${why}` : "actor_action_rejected_by_core");
           continue;
+        }
+        if (from) {
+          moves.push({ actorId: normalized.actorId, from: { x: from.x, y: from.y },
+            to: { ...normalized.params.target }, sprint: Boolean(normalized.params.via) });
         }
         accept(action, normalized);
         continue;
@@ -1275,7 +1282,7 @@ export function createFsmRuntime({
       // Registry mutated (actions, fields, regen, exits) — drop cached observation.
       invalidateObservationCache();
     }
-    return { acceptedActions, preCoreRejections, outcomes,
+    return { acceptedActions, preCoreRejections, outcomes, moves,
       actorFields, exitedActorIds, actorTurn: actorTurnSnapshot, actorSnapshot };
   }
 
@@ -1639,6 +1646,9 @@ export function createFsmRuntime({
               }),
             struck: struckReadings(applied.actorTurn, applied.actorSnapshot),
             fieldHits: fieldHitReadings(applied.actorTurn),
+            // #864: who moved where, and every vital that changed this tick (cast and field hits, regen, upkeep).
+            moves: applied.moves ?? [],
+            vitalChanges: applied.actorTurn?.vitalChanges ?? [],
           },
         } : {}),
       });
