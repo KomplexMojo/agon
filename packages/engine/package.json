@@ -1,6 +1,6 @@
 {
   "name": "@agon-engine/engine",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Agon, a deterministic simulation engine where players and AI agents contest under one rule set. Built bundle of the public API.",
   "type": "module",
   "bin": {
