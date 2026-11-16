@@ -15,7 +15,7 @@ const { spawnSync } = require("node:child_process");
 
 const ROOT = resolve(__dirname, "../../..");
 const CLI = join(ROOT, "packages/adapters-cli/src/cli/agon.mjs");
-const SCENARIOS = join(ROOT, "tools/remote-ollama-control/benchmarks/content-gen/constrained.json");
+const SCENARIOS = join(ROOT, "tests/fixtures/content-gen/constrained.json");
 
 function constrainedScenario(index) {
   const fixture = JSON.parse(readFileSync(SCENARIOS, "utf8"));

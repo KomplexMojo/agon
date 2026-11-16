@@ -45,6 +45,7 @@ learn, return to play.
 Model-driven runs use the same path as the benchmarks (AGENTS.md, Benchmark strategy): the Mac keeps the repo and results, the darren-llm box does the inference, and `remote-ollama-mac run-local` opens the tunnel and exports `OLLAMA_HOST` and `OLLAMA_MODEL` to the command it wraps. The play-sim scripts read those two variables; `--model` and `--ollama-url` override them. `--provider anthropic` swaps Ollama for the Anthropic API instead: it reads `ANTHROPIC_API_KEY` from the environment (never a flag, never logged), needs `--model` (for example `claude-haiku-5-5`), and works with `--driver seat`, `--driver t1-contact` and `--build-source llm`. Commands are logged, so a played game replays with no model call. A model run is a probe: its `summary.json` records `matrix: "local-unversioned"` and the model, and it never gates anything.
 
 ```bash
+# from a KomplexMojo/agon-ops checkout (#871)
 bash scripts/benchmark-preflight.sh --remote          # first: empty model store, empty ssh-agent and stale pins fail silently
 cd tools/remote-ollama-control
 ./bin/remote-ollama-mac run-local --route auto --profile dual --model <model> -- \

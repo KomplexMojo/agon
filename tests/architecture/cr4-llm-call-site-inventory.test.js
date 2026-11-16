@@ -49,8 +49,8 @@ const EXPECTED = Object.freeze({
   // 🔴 FOUND BY M5b, NOT BY THIS GUARD: a caller outside `packages/`. The scan was scoped
   // to packages/ and could not see it — the same blind spot that made CR.4's caller list
   // wrong three times, reproduced in the instrument built to prevent it. Now scans
-  // packages/, scripts/ and tools/.
-  "scripts/level-generation-benchmark.mjs": { runLlmSession: 0, runLlmBudgetLoop: 1 },
+  // packages/, scripts/ and tools/. That caller, scripts/level-generation-benchmark.mjs,
+  // moved to KomplexMojo/agon-ops with the benchmark tooling (#871).
 });
 
 function sourceFiles(directory, found = []) {
@@ -93,14 +93,15 @@ test("CR.4's LLM call-site inventory matches the tree", () => {
   );
 });
 
-test("the totals CR.4 is scoped against: 3 loop call sites, and no session sites at all", () => {
+test("the totals CR.4 is scoped against: 2 loop call sites, and no session sites at all", () => {
   const inventory = actualInventory();
   const total = Object.values(inventory)
     .reduce((sum, f) => sum + f.runLlmSession + f.runLlmBudgetLoop, 0);
 
   // ui-web's design-guidance.js left with the web UI (#744).
-  assert.equal(Object.keys(inventory).length, 3, "two runtime/CLI files + the benchmark script");
-  assert.equal(total, 3, "only runLlmBudgetLoop sites remain");
+  // The benchmark script left with the benchmark tooling for agon-ops (#871).
+  assert.equal(Object.keys(inventory).length, 2, "two runtime/CLI files");
+  assert.equal(total, 2, "only runLlmBudgetLoop sites remain");
   assert.equal(
     Object.values(inventory).reduce((sum, f) => sum + f.runLlmSession, 0),
     0,

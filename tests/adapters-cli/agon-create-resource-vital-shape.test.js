@@ -87,7 +87,7 @@ test("a vital map with no amount still fails closed at the CLI", async () => {
 });
 
 test("the benchmark keeps a resource's vital map for the shared serializer", () => {
-  const { normalizeToolArgs } = require("../../tools/remote-ollama-control/scripts/lib/agon-runner.js");
+  const { normalizeToolArgs } = require("../helpers/benchmark-tool-args.js");
   const [resource] = normalizeToolArgs({ resource: [{ permanenceMode: "level", vitals: { health: { delta: 10 } } }] }).resource;
   assert.deepEqual(resource.vitals, { health: { delta: 10 } });
 });

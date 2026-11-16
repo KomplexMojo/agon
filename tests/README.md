@@ -34,11 +34,9 @@ The goal is not to invent tests from raw prose. The goal is to:
 - `tests/adapters-cli/`, `tests/adapters-test/`: adapter-level behavior.
 - `tests/integration/`: cross-package and MCP/CLI/UI flows.
 - `tests/ui-ascii/`: the reference terminal client, headless.
-- `tests/tools/`: repo tool / benchmark-harness helpers under test.
 - `tests/bindings/`, `tests/scripts/`, `tests/perf/`: binding contracts, script unit tests, perf probes.
 - `tests/fixtures/`: shared deterministic input and expected-output artifacts (data; a few self-tests).
 - `tests/helpers/`: shared test utilities (not a suite root).
-- `tests/llm-suitability/`: scenario pack for LLM suitability (not Vitest by default).
 
 ## Default Rule
 
