@@ -259,7 +259,12 @@ export async function runCommand(argv) {
       }
     : resolvedArgs;
   const result = await commandKernel.run(kernelArgs);
-  emitJsonStdout(await summarizeRunOutput({ outDir: result.outDir, args: resolvedArgs, pricingReport: result.pricingReport }));
+  emitJsonStdout(await summarizeRunOutput({
+    outDir: result.outDir,
+    args: resolvedArgs,
+    pricingReport: result.pricingReport,
+    headlessDelverAutonomy: result.headlessDelverAutonomy,
+  }));
 }
 
 export async function replayCommand(argv) {
