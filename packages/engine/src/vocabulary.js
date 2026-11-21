@@ -5,4 +5,5 @@
 export * from "../../runtime/src/contracts/game-vocabulary.js";
 export * from "../../runtime/src/contracts/sound-cues.js";
 export { TURN_EVENT_KINDS } from "../../runtime/src/contracts/turn-events.js";
+export { FACINGS, DEFAULT_FACING } from "../../runtime/src/contracts/facing.js";
 export { OBJECTIVE_HOLDING_KINDS, OBJECTIVE_KINDS, OBJECTIVE_STATES } from "../../runtime/src/contracts/objectives.js";
