@@ -7,7 +7,7 @@ import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { normalizeWorldStateCheckpoints } from "../../../../runtime/src/commands/kernel.js";
 import { summarizeSolverDecisions } from "../../../../runtime/src/commands/solver-host.js";
-import { applyActorOverrides, applyTileOverrides, barrierSpecsFromTileOverrides, normalizeArgList, resolveVitalDefaults } from "../../../../runtime/src/commands/run-helpers.js";
+import { applyActorOverrides, applyHeadlessDelverAutonomy, applyTileOverrides, barrierSpecsFromTileOverrides, normalizeArgList, resolveVitalDefaults } from "../../../../runtime/src/commands/run-helpers.js";
 // M9: this file's whole schema vocabulary — the SCHEMAS alias table below, the four
 // schema constants it already imported, and the scattered literals in between —
 // now has one origin.
@@ -134,7 +134,7 @@ function buildGameplayBundleFromRunArtifacts({
   };
 }
 
-export async function summarizeRunOutput({ outDir, args, pricingReport } = {}) {
+export async function summarizeRunOutput({ outDir, args, pricingReport, headlessDelverAutonomy } = {}) {
   const runSummary = await readJsonIfExists(join(outDir, "run-summary.json"));
   const resolvedSimConfigPath = join(outDir, "resolved-sim-config.json");
   const resolvedInitialStatePath = join(outDir, "resolved-initial-state.json");
@@ -234,6 +234,9 @@ export async function summarizeRunOutput({ outDir, args, pricingReport } = {}) {
     artifactPaths,
     ticks: runSummary?.metrics?.ticks,
     ...(pricingReport ? { pricingReport } : {}),
+    ...(Array.isArray(headlessDelverAutonomy) && headlessDelverAutonomy.length > 0
+      ? { headlessDelverAutonomy }
+      : {}),
   };
 }
 
@@ -351,6 +354,10 @@ export async function validateRunDryRun(args) {
     vitalSpecs,
     vitalDefaults,
   });
+  const headlessAutonomy = applyHeadlessDelverAutonomy(resolvedInitialState, {
+    preservePlayerControl: args["preserve-player-control"] === true,
+    hasActions: Boolean(actionsPath),
+  });
 
   return buildDryRunSuccess({
     command: "run",
@@ -361,6 +368,7 @@ export async function validateRunDryRun(args) {
     extra: {
       ticks,
       worldStateCheckpoints,
+      ...(headlessAutonomy.applied ? { headlessDelverAutonomy: headlessAutonomy.remapped } : {}),
     },
   });
 }

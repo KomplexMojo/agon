@@ -1,4 +1,4 @@
-import { DEFAULT_VITALS, VITAL_KEYS } from "../contracts/domain-constants.js";
+import { DEFAULT_VITALS, MOTIVATION_FAMILIES, VITAL_KEYS } from "../contracts/domain-constants.js";
 import { CAPTURED_INPUT_SCHEMA } from "../contracts/artifacts.ts";
 import { createConfiguratorPersona } from "../personas/configurator/persona.js";
 
@@ -7,6 +7,61 @@ export function normalizeArgList(value) {
     return [];
   }
   return Array.isArray(value) ? value : [value];
+}
+
+const HEADLESS_THINKING_KINDS = new Set(MOTIVATION_FAMILIES.cognition || []);
+const HEADLESS_GOAL_SOURCE_KINDS = new Set(["exploring", "attacking"]);
+
+/**
+ * Headless `agon run` / `agon_run`: delvers authored as `user_controlled` stay idle unless a
+ * player or play-session feeds commands. By default, strip that seat and ensure an autonomous
+ * stack (`goal_oriented` + a goal source) so the run plays itself. Opt out with
+ * `--preserve-player-control`, or skip when `--actions` already scripts the turn.
+ *
+ * Does not add `ai_controlled`: that also blocks cognition adoption and still needs a driver.
+ */
+export function applyHeadlessDelverAutonomy(initialState, {
+  preservePlayerControl = false,
+  hasActions = false,
+} = {}) {
+  if (preservePlayerControl || hasActions || !initialState || !Array.isArray(initialState.actors)) {
+    return { initialState, remapped: [], applied: false };
+  }
+
+  const presentation = initialState.presentation && typeof initialState.presentation === "object"
+    ? initialState.presentation
+    : {};
+  const remapped = [];
+
+  for (const actor of initialState.actors) {
+    if (!actor || typeof actor !== "object") continue;
+    const category = actor.category || presentation[actor.id]?.category;
+    if (category !== "delver") continue;
+
+    const before = Array.isArray(actor.motivations)
+      ? actor.motivations.filter((kind) => typeof kind === "string" && kind)
+      : (typeof actor.motivation === "string" && actor.motivation ? [actor.motivation] : []);
+    if (!before.includes("user_controlled")) continue;
+
+    const next = before.filter((kind) => kind !== "user_controlled");
+    if (!next.some((kind) => HEADLESS_THINKING_KINDS.has(kind))) {
+      next.push("goal_oriented");
+    }
+    if (!next.some((kind) => HEADLESS_GOAL_SOURCE_KINDS.has(kind))) {
+      next.push("exploring");
+    }
+    if (next.length === 0) {
+      next.push("exploring", "goal_oriented");
+    }
+
+    actor.motivations = next;
+    if (Object.hasOwn(actor, "motivation")) {
+      delete actor.motivation;
+    }
+    remapped.push({ actorId: actor.id, from: before, to: [...next] });
+  }
+
+  return { initialState, remapped, applied: remapped.length > 0 };
 }
 
 function cloneVitalRecords(source = DEFAULT_VITALS) {
