@@ -4,11 +4,18 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 
 ## Unreleased
 
+## 0.7.0
+
 ### Added
 
 - Sparse floor decor (#884): draw-model `floor`, `spawn` and `exit` cells carry `decor`, `null` or a slot 0..`FLOOR_DECOR_COUNT`-1 (4 slots), beside the quiet `floorVariant`. The grid is cut into 4x4 blocks and each holds at most one decor in its inner 2x2 cells, so decor is never denser than one per 16 cells and no two decor cells touch, even diagonally. It is a function of the true grid position and the level seed, so it is the same under fog and in any window crop, and it is hashed apart from `floorVariant`. `view().floorDecor` is the grid (null in unknown cells). `FLOOR_DECOR_COUNT` is exported on `/client`. Additive.
 - Actor facing (#898): `view().player`, every actor in `view().actors` and each draw-model entity from them carry `facing` (`north`, `east`, `south` or `west`) and `moved` (true when the actor stepped during the latest command). Facing is the last step, so standing still keeps it; before any step it is `south`. A step takes the axis it moves farther along and a perfect diagonal takes the horizontal one. The play session reads the Annotator's `move` entries, so a replay or resume reads the same. `FACINGS`, `DEFAULT_FACING` are on `/vocabulary`. Additive.
 - `createGameController().frame()` has `events`, the turn events of the same call as `state().events` (#895), as the docs already said.
+
+## 0.6.0 and 0.6.1
+
+### Added
+
 - Carrying a character, step 3 (#868): `session.characterState({ meta })` (once the player has left) and `createPlaySession({ arrivingCharacter })` carry the player's character into the next level, with the Allocator's `character_arrived` finding in `pricingReport`. A capture records `characterStateId` and replay refuses a different character. `createGameController({ carry: true })` carries on each next level (default off, so levels play as authored) and `arrivingCharacter()` returns it for a save. Additive.
 - Carrying a character, step 2 (#868): the Allocator prices a character carried in from the last level against the seat the level was priced for (`priceArrivingCharacter`, on the Allocator controller): a `character_arrived` finding with both prices and the difference, or `character_unpriced`. Report only; the level is not rebalanced. Additive.
 - Carrying a character, step 1 (#868): `agon/CharacterState` v1, the player's character as it leaves a level. The Configurator writes it (`characterStateFromActor`) and seats it in the next level (`seatArrivingCharacter`): holdings carry, vitals refill, one-level grants come back off. Nothing calls it yet. Additive.
