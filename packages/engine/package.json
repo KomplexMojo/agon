@@ -7,6 +7,7 @@
     "agon": "./dist/adapters-cli/cli/agon.mjs"
   },
   "license": "SEE LICENSE IN LICENSE.md",
+  "homepage": "https://github.com/KomplexMojo/agon#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KomplexMojo/agon.git"
