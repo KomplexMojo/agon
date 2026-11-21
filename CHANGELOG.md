@@ -4,6 +4,8 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 
 ## Unreleased
 
+- Releasing is automatic (no API change): merging a PR that bumps the engine `version` publishes `@agon-engine/engine` and tags `v<version>` (`publish-engine.yml`). The manual tag step is gone.
+
 ## 0.7.0
 
 ### Added
