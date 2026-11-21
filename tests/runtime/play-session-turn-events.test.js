@@ -115,3 +115,57 @@ test("replaying a capture yields the same events as the run", async () => {
 // - a move from an unseen cell into sight carries `to` but no `from`
 // - a party member's vital event is read after switching seat to another member
 // - the game controller's frame().events matches the session result of the last key
+
+test("#898: the player and every actor in view carry facing and moved, from their last step", async () => {
+  const session = await createPlaySession(arena());
+  const start = session.view();
+  assert.equal(start.player.facing, "south", "before any step: the default pose");
+  assert.equal(start.player.moved, false);
+  await session.act(move("east"));
+  let view = session.view();
+  assert.equal(view.player.facing, "east");
+  assert.equal(view.player.moved, true);
+  await session.act({ kind: "wait" });
+  view = session.view();
+  assert.equal(view.player.facing, "east", "standing still keeps the last facing");
+  assert.equal(view.player.moved, false);
+  await session.act(move("south"));
+  assert.equal(session.view().player.facing, "south");
+  await session.act(move("northwest"));
+  assert.equal(session.view().player.facing, "west", "a perfect diagonal takes the horizontal axis");
+});
+
+test("#898: facingOfStep takes the dominant axis, horizontal on a tie, and null for no step", () => {
+  const { facingOfStep, FACINGS, DEFAULT_FACING } = require("../../packages/runtime/src/contracts/facing.js");
+  assert.equal(facingOfStep(1, 0), "east");
+  assert.equal(facingOfStep(-1, 0), "west");
+  assert.equal(facingOfStep(0, 1), "south");
+  assert.equal(facingOfStep(0, -1), "north");
+  assert.equal(facingOfStep(2, -1), "east");
+  assert.equal(facingOfStep(-1, 2), "south");
+  assert.equal(facingOfStep(1, 1), "east");
+  assert.equal(facingOfStep(-1, -1), "west");
+  assert.equal(facingOfStep(0, 0), null);
+  assert.ok(FACINGS.includes(DEFAULT_FACING));
+});
+
+test("#898: every mover's facing follows its last move event, warden included, and the draw model carries it", async () => {
+  const { facingOfStep } = require("../../packages/runtime/src/contracts/facing.js");
+  const { buildBoardDrawModel } = await import("../../packages/runtime/src/render/board-draw-model.js");
+  const session = await createPlaySession(arena());
+  const last = new Map();
+  for (let i = 0; i < 8; i += 1) {
+    const result = await session.act(i % 2 === 0 ? move("east") : { kind: "wait" });
+    for (const event of result.events) {
+      if (event.event === "move" && event.from) last.set(event.sourceId, facingOfStep(event.to.x - event.from.x, event.to.y - event.from.y));
+    }
+    const view = session.view();
+    const model = buildBoardDrawModel(view);
+    for (const entity of model.entities) {
+      assert.ok(["north", "east", "south", "west"].includes(entity.facing));
+      assert.equal(typeof entity.moved, "boolean");
+      if (last.has(entity.id)) assert.equal(entity.facing, last.get(entity.id), `${entity.id} faces its last step`);
+    }
+  }
+  assert.ok(last.has("delver_1"));
+});

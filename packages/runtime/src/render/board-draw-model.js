@@ -33,8 +33,10 @@ const spriteOf = (entity) => normalizeEntitySpriteState(entity, { role: entity.r
  * @param {object} view  what `createPlaySession().view()` returns
  * @returns {{ width: number, height: number, cells: object[][], entities: object[], seatHud: object|null }}
  *   `cells[y][x]` is `{ tile, sight }` (`tile` is "fog" where the cell was never seen; floor, spawn and
- *   exit cells also carry `floorVariant`, 0..FLOOR_VARIANT_COUNT-1, #854); `entities` are
- *   `{ id, x, y, sprite: { role, affinity } }` for everything the view shows standing in sight.
+ *   exit cells also carry `floorVariant`, 0..FLOOR_VARIANT_COUNT-1, #854, and `decor`, null or
+ *   0..FLOOR_DECOR_COUNT-1, #884); `entities` are
+ *   `{ id, x, y, sprite: { role, affinity }, facing?, moved? }` for everything the view shows standing in sight;
+ *   `facing` ("north" | "east" | "south" | "west", `FACINGS`) and `moved` come from the view's player and actors.
  */
 export function buildBoardDrawModel(view) {
   if (!view || !Array.isArray(view.rows)) throw new Error("buildBoardDrawModel: a play-session view is required");
@@ -44,7 +46,10 @@ export function buildBoardDrawModel(view) {
     if (sight === PLAY_SIGHT.UNKNOWN) return { tile: "fog", sight };
     const tile = tileOf(glyph);
     const variant = view.floorVariants?.[y]?.[x];
-    if ((tile === "floor" || tile === "spawn" || tile === "exit") && Number.isInteger(variant)) return { tile, sight, floorVariant: variant };
+    if ((tile === "floor" || tile === "spawn" || tile === "exit") && Number.isInteger(variant)) {
+      const decor = view.floorDecor?.[y]?.[x];
+      return { tile, sight, floorVariant: variant, decor: Number.isInteger(decor) ? decor : null };
+    }
     const mask = view.wallMasks?.[y]?.[x];
     if (tile !== "wall" || !Number.isInteger(mask)) return { tile, sight };
     const blob = view.wallBlobMasks?.[y]?.[x];
@@ -59,7 +64,9 @@ export function buildBoardDrawModel(view) {
     ...(view.lootBodies ?? []),
   ];
   const entities = seen.filter((entity) => entity?.position)
-    .map((entity) => ({ id: entity.id, x: entity.position.x, y: entity.position.y, sprite: spriteOf(entity) }));
+    .map((entity) => ({ id: entity.id, x: entity.position.x, y: entity.position.y, sprite: spriteOf(entity),
+      // #898: which way a player or actor last stepped, and whether it stepped this turn (a client picks Walk or Idle).
+      ...(entity.facing ? { facing: entity.facing, moved: Boolean(entity.moved) } : {}) }));
   return {
     width: cells[0]?.length ?? 0,
     height: cells.length,

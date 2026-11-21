@@ -131,3 +131,63 @@ test("#854: floorVariantAt is deterministic, seed-dependent and covers every var
   assert.ok(counts.every((n) => n > 100), `every variant used reasonably often: ${counts}`);
   assert.ok(differs > 800, "a different seed reshuffles the floor");
 });
+
+test("#884: floor cells carry decor, null or a slot, and it matches the view's true-grid plane", async () => {
+  const { buildBoardDrawModel } = await import("../../packages/runtime/src/render/board-draw-model.js");
+  const { FLOOR_DECOR_COUNT } = await import("../../packages/runtime/src/render/floor-variants.js");
+  const view = await played("first-steps");
+  const model = buildBoardDrawModel(view);
+  let floors = 0;
+  let decorated = 0;
+  model.cells.forEach((row, y) => row.forEach((cell, x) => {
+    if (cell.tile === "floor" || cell.tile === "spawn" || cell.tile === "exit") {
+      floors += 1;
+      assert.ok(cell.decor === null || (Number.isInteger(cell.decor) && cell.decor >= 0 && cell.decor < FLOOR_DECOR_COUNT));
+      assert.equal(cell.decor, view.floorDecor[y][x] ?? null);
+      if (cell.decor !== null) decorated += 1;
+    } else {
+      assert.equal(cell.decor, undefined, `${cell.tile} at ${x},${y} must not carry decor`);
+    }
+  }));
+  assert.ok(floors > 0);
+  assert.ok(decorated * 8 <= floors, `decor stays sparse: ${decorated} of ${floors} floor cells`);
+});
+
+test("#884: no two decor cells share a cardinal (or diagonal) edge, on any seed, and the density is bounded", async () => {
+  const { floorDecorAt, FLOOR_DECOR_COUNT } = await import("../../packages/runtime/src/render/floor-variants.js");
+  const SIZE = 60;
+  for (const seed of [0, 1, 7, 12345, -3]) {
+    let decorated = 0;
+    const used = new Set();
+    const at = (x, y) => (x < 0 || y < 0 ? null : floorDecorAt(x, y, seed));
+    for (let y = 0; y < SIZE; y += 1) for (let x = 0; x < SIZE; x += 1) {
+      const slot = at(x, y);
+      if (slot === null) continue;
+      decorated += 1;
+      used.add(slot);
+      assert.ok(slot >= 0 && slot < FLOOR_DECOR_COUNT);
+      for (const [dx, dy] of [[1, 0], [0, 1], [1, 1], [1, -1]]) {
+        assert.equal(at(x + dx, y + dy), null, `seed ${seed}: decor at ${x},${y} touches ${x + dx},${y + dy}`);
+      }
+    }
+    assert.ok(decorated * 16 <= SIZE * SIZE, `seed ${seed}: at most one decor per 16 cells, got ${decorated}`);
+    assert.ok(decorated * 40 >= SIZE * SIZE, `seed ${seed}: decor is not absent, got ${decorated}`);
+    assert.equal(used.size, FLOOR_DECOR_COUNT, `seed ${seed}: every slot appears`);
+  }
+});
+
+test("#884: decor is stable under fog and independent of the quiet floor variant", async () => {
+  const { buildBoardDrawModel } = await import("../../packages/runtime/src/render/board-draw-model.js");
+  const { FLOOR_VARIANT_COUNT, floorVariantAt, floorDecorAt } = await import("../../packages/runtime/src/render/floor-variants.js");
+  const fogged = buildBoardDrawModel((await open("first-steps", true)).view());
+  const open_ = buildBoardDrawModel((await open("first-steps", false)).view());
+  fogged.cells.forEach((row, y) => row.forEach((cell, x) => {
+    if (cell.decor !== undefined) assert.equal(cell.decor, open_.cells[y][x].decor, `decor at ${x},${y} agrees with and without fog`);
+  }));
+  // Independence: among decorated cells every quiet variant still appears, so decor is not "high variant".
+  const variants = new Set();
+  for (let y = 0; y < 120; y += 1) for (let x = 0; x < 120; x += 1) {
+    if (floorDecorAt(x, y, 3) !== null) variants.add(floorVariantAt(x, y, 3));
+  }
+  assert.equal(variants.size, FLOOR_VARIANT_COUNT);
+});

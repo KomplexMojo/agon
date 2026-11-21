@@ -22,6 +22,20 @@ describe("runtime game controller", () => {
     expect(game.state().status.tick).toBeGreaterThan(0);
   });
 
+  test("#895: frame().events is the turn events of the call, the same as state().events", async () => {
+    const game = await createGameController({ levels: levels() });
+    expect(game.frame().events).toEqual([]);
+    for (const direction of ["east", "south", "west", "north"]) {
+      await game.handle({ type: INTENT.MOVE, direction });
+      expect(game.frame().events).toEqual(game.state().events);
+      if (game.frame().events.length > 0) {
+        expect(game.frame().events.some((event) => event.event === "move")).toBe(true);
+        return;
+      }
+    }
+    throw new Error("no move produced a turn event");
+  });
+
   test("help is free and needs no terminal", async () => {
     const game = await createGameController({ levels: levels() });
     const shown = game.frame().showHelp;

@@ -757,6 +757,8 @@ export async function createGameController({ levels, startIndex = 0, createSessi
       turns,
       message,
       messageData: structuredClone(messageData),
+      // #895: the turn events of the same call, as on `state().events`, so a draw client needs only the frame.
+      events: structuredClone(events),
       showHelp,
       windowSize,
       aim: panel?.type === "aim" ? panel.cursor : null,
