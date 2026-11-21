@@ -81,6 +81,8 @@ one of `TURN_EVENT_KINDS` (on `/vocabulary`):
 | `defeat` | `targetId`, `defeatVital`, and the `sourceId`, `kind` and `expression` that did it |
 | `exit` | `targetId` |
 
+Fog memory: `fogMemory` on `createGameController` / `createPlaySession` is `true` (every cell seen stays `REMEMBERED`, default), `false` (fog returns when you leave), or `FOG_MEMORY.STRUCTURE` (`"structure"`, #905): walls stay remembered, floor returns to fog.
+
 Under fog only what your party saw or took part in is listed. `session.eventsSince(seq)` returns the events after a
 `seq`, and the game controller's `frame().events` holds the last call's. `session.status()` says whether the run is won, lost or still
 going: `outcome` is `playing`, `won` or `lost`, and `objectives` lists the level's objectives (#867), each

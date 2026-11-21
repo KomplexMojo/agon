@@ -18,8 +18,9 @@ import { DEFAULT_MESSAGES, formatMessage, msg } from "./message-catalogue.js";
  * @param {number} [args.startIndex]
  * @param {Function} [args.createSession] injectable for tests
  * @param {boolean} [args.fog] fog of war: you see only what is in sight (default on)
- * @param {boolean} [args.fogMemory] with fog, keep cells seen before on the board (default on);
- *   false (#858) turns them back to fog when the player leaves
+ * @param {boolean|"structure"} [args.fogMemory] with fog, keep cells seen before on the board (default on);
+ *   false (#858) turns them back to fog when the player leaves;
+ *   "structure" (#905) keeps only walls
  * @param {boolean} [args.showHelp] start with the key help shown (default)
  * @param {boolean} [args.carry] #868: the player's character carries into the next level (holdings
  *   carry, vitals refill, the Allocator prices it). Off by default: every level starts as authored.
