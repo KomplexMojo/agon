@@ -85,6 +85,8 @@ Fog memory: `fogMemory` on `createGameController` / `createPlaySession` is `true
 
 Light fixtures (#906): a level built with the `torch` tactic holds cheap torches that light for a few turns, go dark and refill. `torchActivation` on `createGameController` / `createPlaySession` is `"proximity"` (a torch lights when a delver comes within 3 tiles) or `"room_enter"` (when a delver enters its room); omit it and torches are always on, as before.
 
+Pocket lantern (#907): `createCharacterSheet()` with a blank spec starts the delver with `light:emit` range 1, intensity 1 (`DEFAULT_DELVER_LANTERN`) equipped in slot 1, about 47 tokens of the delver pool. Unequip it on the sheet or pass `lantern: false` for a dark or stealth build. A spec that is written, wardens, hazards and every other actor never get it.
+
 Under fog only what your party saw or took part in is listed. `session.eventsSince(seq)` returns the events after a
 `seq`, and the game controller's `frame().events` holds the last call's. `session.status()` says whether the run is won, lost or still
 going: `outcome` is `playing`, `won` or `lost`, and `objectives` lists the level's objectives (#867), each

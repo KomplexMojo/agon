@@ -6,6 +6,8 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 
 - Releasing is automatic (no API change): merging a PR that bumps the engine `version` publishes `@agon-engine/engine` and tags `v<version>` (`publish-engine.yml`). The manual tag step is gone.
 
+- Pocket lantern (#907): a blank `createCharacterSheet()` starts with `light:emit` 1x1 equipped (`DEFAULT_DELVER_LANTERN`); `lantern: false` or unequipping opts out, and a written spec is never given one. Changes what a blank sheet opens with (about 47 tokens more); additive option.
+
 ## 0.8.0
 
 ### Added

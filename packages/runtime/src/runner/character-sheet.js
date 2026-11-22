@@ -11,7 +11,7 @@
  * The sheet is built for a delver; the row builders take the actor kind so wardens, hazards and
  * resources can add theirs.
  */
-import { AFFINITY_EXPRESSIONS, AFFINITY_KINDS, ACTOR_VIABILITY_FLOOR, PRESET_AFFINITY_SLOTS } from "../contracts/domain-constants.js";
+import { AFFINITY_EXPRESSIONS, AFFINITY_KINDS, ACTOR_VIABILITY_FLOOR, DEFAULT_DELVER_LANTERN, PRESET_AFFINITY_SLOTS } from "../contracts/domain-constants.js";
 import { GAME_VITAL_KEYS } from "../contracts/game-vocabulary.js";
 import { createAllocatorPersona } from "../personas/allocator/persona.js";
 import { createConfiguratorPersona } from "../personas/configurator/persona.js";
@@ -95,9 +95,10 @@ function allowanceFor(requested, allocator) {
  * @param {{ spec?: string, budgetTokens?: number, id?: string }} options
  *   `spec` is the starting character (a scenario's own delver, `minions=` included); `budgetTokens`
  *   is what the Allocator allots this character and its minions (the delver pool of the level it
- *   joins); `id` is the actor id written into the spec.
+ *   joins); `id` is the actor id written into the spec; `lantern: false` (#907) starts a blank sheet
+ *   without the default pocket lantern (`DEFAULT_DELVER_LANTERN`).
  */
-export function createCharacterSheet({ spec = "", budgetTokens: requested, id = "hero" } = {}) {
+export function createCharacterSheet({ spec = "", budgetTokens: requested, id = "hero", lantern = true } = {}) {
   const configurator = createConfiguratorPersona({ clock: UNUSED_CLOCK });
   const allocator = createAllocatorPersona({ clock: UNUSED_CLOCK, normalizeMotivations: configurator.normalizeMotivations });
   // What the Allocator allots a delver: the caller's figure (a level's own delver pool), else the
@@ -105,6 +106,9 @@ export function createCharacterSheet({ spec = "", budgetTokens: requested, id = 
   const allowance = allowanceFor(requested, allocator);
   const roleChoices = ["none", ...configurator.retinueRoles()];
   const parsed = sheetChoicesFromSpec(spec);
+  // #907: a blank sheet starts with a pocket lantern equipped. A spec that is written (even one with no
+  // affinities, as when the lantern was unequipped) opens as written, and `lantern: false` opts out.
+  if (lantern && !String(spec).trim()) parsed.slots[0] = { ...DEFAULT_DELVER_LANTERN };
   const initial = { ...parsed, minions: parsed.minions.filter((role) => roleChoices.includes(role) && role !== "none") };
   let choices = clone(initial);
   const cursor = { row: 0, field: 0 };
