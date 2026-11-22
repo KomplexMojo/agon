@@ -94,6 +94,8 @@ import { ACTOR_CONDITION_FADE_TICKS } from "../../../core-ts/src/rules/actor-con
 export const PLAY_COMMAND_KINDS = ACTOR_COMMAND_KINDS;
 
 /** Per-cell sight in `view().sight`: seen now, seen before, never seen. */
+// #905: `fogMemory` also takes "structure", the hybrid between false and true.
+export const FOG_MEMORY = Object.freeze({ STRUCTURE: "structure" });
 export const PLAY_SIGHT = Object.freeze({ VISIBLE: "v", REMEMBERED: "r", UNKNOWN: "u" });
 
 // Whether a loaded level's actors meet the viability floor is the Configurator's question.
@@ -155,6 +157,9 @@ export const COMPANION_MOTIVATION = "friendly";
  *                                     now shows, every other cell is `UNKNOWN`, so fog returns when
  *                                     the player leaves. The session still keeps what was seen for
  *                                     the rooms notebook; it just never reaches the board.
+ *                                     "structure" (#905, `FOG_MEMORY.STRUCTURE`): hybrid. Walls stay
+ *                                     `REMEMBERED` out of sight, every other cell (floor, start, exit)
+ *                                     is `UNKNOWN`, so the layout is kept without a dim dungeon underfoot.
  * @param {string}   [args.glyphSet]   "unicode" (default) or "ascii": the wall glyph set (#574)
  * @param {object}   [args.arrivingCharacter] an agon/CharacterState carried in from the last level
  *                                     (#868): the Configurator seats it as the player (holdings carry,
@@ -1163,7 +1168,8 @@ function renderBoard(snapshot, { presentation, legend, playerId, glyphSet }) {
   }
   const player = snapshot.actors.find((actor) => actor.id === playerId && actor.lifecycle !== "exited");
   if (player) grid[player.position.y][player.position.x] = legend.actor;
-  return { baseTiles, wallMasks, wallBlobMasks, buffer: grid.map((cells) => cells.join("")) };
+  const walls = baseTiles.map((_, y) => [...baseTiles[y]].map((__, x) => snapshot.terrain[y * width + x] === "wall"));
+  return { baseTiles, wallMasks, wallBlobMasks, walls, buffer: grid.map((cells) => cells.join("")) };
 }
 
 // Fog over the board. Without a sight grid (no fog, or the player has left the map) nothing is hidden.
@@ -1181,7 +1187,7 @@ function applyFog(frame, visible, explored, fogMemory = true) {
       if (visible[y]?.[x]) {
         row += bufferRow[x];
         sightRow += PLAY_SIGHT.VISIBLE;
-      } else if (fogMemory && explored[y]?.[x]) {
+      } else if (fogMemory && explored[y]?.[x] && (fogMemory !== FOG_MEMORY.STRUCTURE || frame.walls?.[y]?.[x])) {
         row += frame.baseTiles[y][x];
         sightRow += PLAY_SIGHT.REMEMBERED;
       } else {

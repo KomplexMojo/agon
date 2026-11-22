@@ -19,6 +19,7 @@ export {
   resumePlaySession,
   normalizePlayCommand,
   PLAY_SIGHT,
+  FOG_MEMORY,
   PLAY_DIRECTIONS,
   PLAY_DIRECTION_STEPS,
   PLAY_COMMAND_KINDS,

@@ -352,6 +352,17 @@ test("with fogMemory off, cells left behind return to fog", async () => {
   assert.equal(view.wallMasks[0][3], null, "a wall left behind loses its mask too");
 });
 
+// #905: "structure" is the hybrid: walls stay remembered out of sight, floor returns to fog.
+test('with fogMemory "structure", walls are remembered and floor is not', async () => {
+  const session = await createPlaySession({ simConfig, initialState, fog: true, fogMemory: "structure" });
+  await session.act(move("east"));
+  await session.act(move("south"));
+  const view = session.view();
+  assert.equal(view.sight[1][1], PLAY_SIGHT.UNKNOWN, "floor left behind returns to fog");
+  assert.equal(view.sight[0][2], PLAY_SIGHT.REMEMBERED, "a wall left behind is remembered");
+  assert.notEqual(view.wallMasks[0][2], null, "and keeps its mask");
+});
+
 test("with fogMemory off, light emit is what shows cells beyond adjacency, and only while it shines", async () => {
   const level = mazeLevel([trap("lamp", "light", { x: 3, y: 3 }, { stacks: 2, mana: 6, regen: 0 })]);
   const session = await createPlaySession({ ...level, fog: true, fogMemory: false });
