@@ -3,4 +3,4 @@
  * engine made it. `tests/architecture/engine-version.test.js` fails unless it equals
  * `packages/engine/package.json` `version`, so a release bump changes both together.
  */
-export const ENGINE_VERSION = "0.6.1";
+export const ENGINE_VERSION = "0.7.0";

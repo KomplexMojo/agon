@@ -1,23 +1,43 @@
-# Publishes @agon-engine/engine to the public npm registry when a version tag is pushed.
-#   git tag v0.1.0 && git push origin v0.1.0
-# The tag must equal packages/engine/package.json "version". Needs the NPM_TOKEN repo secret
-# (granular token, read+write, scoped to @agon-engine). Manual runs do a dry run only.
+# Publishes @agon-engine/engine to the public npm registry and tags the release, with no manual step.
+#
+# A release is a PR that bumps "version" in packages/engine/package.json (and ENGINE_VERSION, which a
+# guard test keeps equal). When that PR merges to main, this workflow runs the architecture gates, builds,
+# publishes, then tags the merge commit v<version>. A push that leaves the version unchanged is a no-op:
+# it stops at the check below because the version is already on npm and tagged.
+#
+# Tagging happens here, not in a second workflow, because a tag pushed with GITHUB_TOKEN does not start
+# other workflows. If publish succeeds and tagging fails, run the workflow again: it skips the publish
+# and only adds the tag. Needs the NPM_TOKEN repo secret (granular, read+write, scoped to @agon-engine).
+# A manual run does a dry run unless "publish" is ticked, which does exactly what a merge does (the way to
+# release a version that merged before this workflow existed, or to retry).
 name: Publish engine
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+    paths: ["packages/engine/package.json"]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish and tag for real (off: dry run)"
+        type: boolean
+        default: false
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
+
+concurrency:
+  group: publish-engine
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -25,23 +45,51 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
-      - run: pnpm install --frozen-lockfile
-      - name: Tag matches package version
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: What is left to do for this version
+        id: state
         run: |
           version=$(node -p "require('./packages/engine/package.json').version")
-          test "v$version" = "${GITHUB_REF_NAME}" || { echo "tag ${GITHUB_REF_NAME} != package version v$version"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] || [ "${{ inputs.publish }}" = "true" ]; then
+            echo "real=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "real=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$(npm view "@agon-engine/engine@$version" version 2>/dev/null)" = "$version" ]; then
+            echo "on_npm=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "on_npm=false" >> "$GITHUB_OUTPUT"
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null 2>&1; then
+            echo "tagged=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tagged=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version $version: on npm $(grep on_npm "$GITHUB_OUTPUT" | cut -d= -f2), tagged $(grep tagged "$GITHUB_OUTPUT" | cut -d= -f2)"
+      - run: pnpm install --frozen-lockfile
+        if: steps.state.outputs.on_npm == 'false'
       - name: Gates (architecture guards and the bundle test)
+        if: steps.state.outputs.on_npm == 'false'
         run: pnpm run test:vitest -- tests/architecture
       - name: Build
+        if: steps.state.outputs.on_npm == 'false'
         run: pnpm run build:engine -- --write-exports
       - name: Publish
+        if: steps.state.outputs.on_npm == 'false'
         working-directory: packages/engine
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+          if [ "${{ steps.state.outputs.real }}" = "true" ]; then
             npm publish --provenance --access public
           else
             npm publish --dry-run --access public
           fi
+      - name: Tag the release
+        if: steps.state.outputs.real == 'true' && steps.state.outputs.tagged == 'false'
+        run: |
+          version="${{ steps.state.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$version" -m "@agon-engine/engine $version" "${GITHUB_SHA}"
+          git push origin "v$version"

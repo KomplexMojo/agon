@@ -8,7 +8,7 @@ const ROOT = resolve(__dirname, "../..");
 const FACADE = "packages/runtime/src/render/client-surface.js";
 
 const PINNED = [
-  "FLOOR_VARIANT_COUNT", "HUD_VITAL_LABELS", "WALL_NEIGHBOUR_BITS", "WALL_BLOB_BITS", "WALL_BLOB_MASKS", "wallBlobSlot", "ENTITY_SPRITE_ROLES", "ICON_SHAPES", "MESSAGE_IDS", "DEFAULT_MESSAGES", "formatMessage", "ENGINE_VERSION", "PLAY_SAVE_SCHEMA", "resumePlaySession", "validatePlaySave", "PLAY_COMMAND_KINDS", "PLAY_DIRECTIONS",
+  "FLOOR_DECOR_COUNT", "FLOOR_VARIANT_COUNT", "HUD_VITAL_LABELS", "WALL_NEIGHBOUR_BITS", "WALL_BLOB_BITS", "WALL_BLOB_MASKS", "wallBlobSlot", "ENTITY_SPRITE_ROLES", "ICON_SHAPES", "MESSAGE_IDS", "DEFAULT_MESSAGES", "formatMessage", "ENGINE_VERSION", "PLAY_SAVE_SCHEMA", "resumePlaySession", "validatePlaySave", "PLAY_COMMAND_KINDS", "PLAY_DIRECTIONS",
   "PLAY_DIRECTION_STEPS", "PLAY_SIGHT", "FOG_MEMORY", "RESOURCE_BUNDLE_DRESSING_SCHEMA", "RESOURCE_BUNDLE_SCHEMA", "buildActorHudModel", "buildIconModel",
   "buildBoardDrawModel", "buildBoardFrame", "playWindowBounds", "buildAffinityBoardOverlayModel", "createDefaultResourceBundleArtifact", "createPlaySession", "listResourceBundleAssetFiles",
   "normalizeEntitySpriteState", "normalizePlayCommand", "replayPlaySession", "dressResourceBundle", "elementArtCoverage", "elementKeyFor", "resolveElementArt", "validateResourceBundleArtifact", "validateResourceBundleDressing",

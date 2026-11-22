@@ -62,7 +62,7 @@
  * re-runs it on the same level. The simulation is deterministic, so a replay
  * reaches the same state. Writing the artifact to disk is the caller's job.
  */
-import { floorVariantAt } from "../render/floor-variants.js";
+import { floorVariantAt, floorDecorAt } from "../render/floor-variants.js";
 import { AFFINITY_TABLE } from "../../../core-ts/src/state/affinity-table.ts";
 import { ACTOR_COMMAND_KINDS, normalizeActorCommand, normalizeActorStrategy } from "../personas/actor/persona.js";
 import { createConfiguratorPersona } from "../personas/configurator/persona.js";
@@ -80,6 +80,7 @@ import { createPlaybackRuntime, createRuntimeCore } from "./core-facade.js";
 import { CAPTURED_INPUT_SCHEMA, PLAY_SAVE_SCHEMA } from "../contracts/artifacts.ts";
 import { ENGINE_VERSION } from "../contracts/engine-version.js";
 import { toTurnEvent } from "../contracts/turn-events.js";
+import { DEFAULT_FACING, facingOfStep } from "../contracts/facing.js";
 import { playSaveError, playStateDigest, validatePlaySave } from "./play-save.js";
 import { equippedActorAffinityKeys, exhaustedActorAffinityKeys, MAX_AFFINITY_SLOTS } from "../../../core-ts/src/state/actor-inventory.ts";
 import { unpayableActorAffinities } from "../../../core-ts/src/rules/actor-upkeep.ts";
@@ -395,6 +396,15 @@ export async function createPlaySession({
   // #864: the Annotator's move and vital entries, numbered on the same count. They feed turn events
   // only, never the worded battle log or the cues.
   const motionLog = [];
+  // #898: which way each actor last stepped, and in which numbered entry (a replay rebuilds both from
+  // the same `move` entries). `turnStartSeq` is the count when the latest command began, so an actor
+  // whose last step is after it moved on this turn.
+  const facings = new Map();
+  const lastStepSeq = new Map();
+  let turnStartSeq = 0;
+  const beginTurn = () => { turnStartSeq = battleLogSeq; return battleLogSeq; };
+  const withFacing = (actor) => ({ ...actor, facing: facings.get(actor.id) ?? DEFAULT_FACING,
+    moved: (lastStepSeq.get(actor.id) ?? 0) > turnStartSeq });
   // #692: the last band our side's hits read on each other actor, `{ band, tick }`. Shared by the party,
   // like the battle log it comes from; it ages and reads as unknown after ACTOR_CONDITION_FADE_TICKS.
   const conditions = new Map();
@@ -434,6 +444,11 @@ export async function createPlaySession({
         const fromSeenBy = entry.event === "move"
           ? motionReaders.filter((pid) => involved.includes(pid) || side.has(entry.sourceId) || sees(pid, entry.from)) : [];
         motionLog.push({ seq: battleLogSeq, entry, readers: motionReaders, fromSeenBy });
+        if (entry.event === "move") {
+          const facing = facingOfStep(entry.to.x - entry.from.x, entry.to.y - entry.from.y);
+          if (facing) facings.set(entry.sourceId, facing);
+          lastStepSeq.set(entry.sourceId, battleLogSeq);
+        }
         continue;
       }
       const ally = entry.sourceId !== entry.targetId && side.has(entry.sourceId) && side.has(entry.targetId);
@@ -613,7 +628,7 @@ export async function createPlaySession({
     const actorCommands = { [actorId]: { kind: "wait" } };
     if (!seat.exited && !seat.defeated) actorCommands[activeId] = { kind: "wait" };
     departures = [];
-    const mark = battleLogSeq;
+    const mark = beginTurn();
     await stepWorld({ actorCommands, actorStrategies: { [actorId]: normalized } });
     commandLog.push({ tick: currentTick(), actorId, seat: activeId, order: structuredClone(normalized) });
     return { ok: true, actorId, tick: currentTick(), strategy: normalized, status: status(), cues: cuesSince(mark), events: eventsSince(mark) };
@@ -650,7 +665,7 @@ export async function createPlaySession({
     let ran = 0;
     let stoppedBy = "ticks";
     departures = [];
-    const mark = battleLogSeq;
+    const mark = beginTurn();
     while (ran < ticks) {
       const seat = statusOf(activeId);
       if (seat.exited || seat.defeated) {
@@ -734,7 +749,7 @@ export async function createPlaySession({
     if (visible && !visible[target.position.y]?.[target.position.x]) return refuse("TargetNotInSight");
     departures = [];
     const wait = { kind: "wait" };
-    const mark = battleLogSeq;
+    const mark = beginTurn();
     await stepWorld({ actorCommands: { [actorId]: wait } });
     commandLog.push({ tick: currentTick(), actorId, command: wait });
     const after = readSnapshot().actors.find((actor) => actor.id === targetId);
@@ -811,7 +826,7 @@ export async function createPlaySession({
     const before = statusOf(actorId);
     if (before.exited || before.defeated) return refuse(before.exited ? "exited" : "defeated");
     departures = [];
-    const mark = battleLogSeq;
+    const mark = beginTurn();
     await stepWorld({ actorCommands: { [actorId]: normalized } });
     commandLog.push({ tick: currentTick(), actorId, command: structuredClone(normalized) });
     const applyFrame = runtime.getTickFrames().filter((frame) => frame?.phaseDetail === "apply").at(-1) || {};
@@ -859,7 +874,7 @@ export async function createPlaySession({
     if (!actorCommands[activeId] && !seat.exited && !seat.defeated
       && !(strategies()[activeId] || initialState.strategies?.[activeId])) actorCommands[activeId] = { kind: "wait" };
     departures = [];
-    const mark = battleLogSeq;
+    const mark = beginTurn();
     await stepWorld({ actorCommands });
     commandLog.push({ tick: currentTick(), actorCommands: structuredClone(Object.fromEntries(ids.map((id) => [id, actorCommands[id]]))) });
     const applyFrame = runtime.getTickFrames().filter((frame) => frame?.phaseDetail === "apply").at(-1) || {};
@@ -999,8 +1014,9 @@ export async function createPlaySession({
     return {
       ...built,
       // #692: what our side's hits read of each actor in sight (a band and its age), never its vitals.
-      ...(Array.isArray(built.actors) ? { actors: built.actors.map((actor) => withCondition(actor, tickNow)) } : {}),
+      ...(Array.isArray(built.actors) ? { actors: built.actors.map((actor) => withFacing(withCondition(actor, tickNow))) } : {}),
       ...(Array.isArray(built.hazards) ? { hazards: built.hazards.map((actor) => withCondition(actor, tickNow)) } : {}),
+      ...(built.player ? { player: withFacing(built.player) } : {}),
       party: partyView(snapshot),
       ...(aiIds.length > 0 ? { aiControlled: partyView(snapshot, aiIds) } : {}),
       rooms: notebookRooms(snapshot),
@@ -1307,6 +1323,8 @@ export function buildPlayView({ snapshot, presentation = {}, legend: baseLegend,
     // Every affinity field on each cell (#287), only where the player sees now: a remembered
     // or unknown cell shows no live field, except the reach of the player's own (Darren,
     // 2026-10-29: you know where your own aura reaches; it tells you nothing about the cell).
+    // Sparse floor decor (#884): a slot number on a few cells, null elsewhere; same true-grid rule as the variant.
+    floorDecor: frame.baseTiles.map((row, y) => [...row].map((_, x) => (fogged.sight[y][x] === PLAY_SIGHT.UNKNOWN ? null : floorDecorAt(x, y, seed)))),
     field: playField(field, fogged.visible, player?.id),
     // Lasting draw sustains (#815), a grid of their own so emit's marks, tint and cancellation never
     // read them. Same sight rule as `field`; each entry says `expression: "draw"` and never `restores`.

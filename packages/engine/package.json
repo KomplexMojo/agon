@@ -1,12 +1,13 @@
 {
   "name": "@agon-engine/engine",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Agon, a deterministic simulation engine where players and AI agents contest under one rule set. Built bundle of the public API.",
   "type": "module",
   "bin": {
     "agon": "./dist/adapters-cli/cli/agon.mjs"
   },
   "license": "SEE LICENSE IN LICENSE.md",
+  "homepage": "https://github.com/KomplexMojo/agon#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KomplexMojo/agon.git"
