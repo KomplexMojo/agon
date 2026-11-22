@@ -21,12 +21,13 @@ import { DEFAULT_MESSAGES, formatMessage, msg } from "./message-catalogue.js";
  * @param {boolean|"structure"} [args.fogMemory] with fog, keep cells seen before on the board (default on);
  *   false (#858) turns them back to fog when the player leaves;
  *   "structure" (#905) keeps only walls
+ * @param {"proximity"|"room_enter"} [args.torchActivation] #906: torches wait dark until a delver nears or enters their room
  * @param {boolean} [args.showHelp] start with the key help shown (default)
  * @param {boolean} [args.carry] #868: the player's character carries into the next level (holdings
  *   carry, vitals refill, the Allocator prices it). Off by default: every level starts as authored.
  *   A `resume` of a level entered with a carried character passes it as `resume.arrivingCharacter`.
  */
-export async function createGameController({ levels, startIndex = 0, createSession = createPlaySession, fog = true, fogMemory = true, showHelp: initialHelp = true, glyphSet = "unicode", window: initialWindow = WINDOW_DEFAULT, resume = null, messages = null, carry = false } = {}) {
+export async function createGameController({ levels, startIndex = 0, createSession = createPlaySession, fog = true, fogMemory = true, torchActivation = undefined, showHelp: initialHelp = true, glyphSet = "unicode", window: initialWindow = WINDOW_DEFAULT, resume = null, messages = null, carry = false } = {}) {
   let windowSize = initialWindow;
   if (!Array.isArray(levels) || levels.length === 0) {
     throw new Error("createGame: at least one level is required");
@@ -60,7 +61,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   async function startLevel(index) {
     levelIndex = index;
     const level = levels[levelIndex];
-    session = await createSession({ simConfig: level.simConfig, initialState: level.initialState, fog, fogMemory, glyphSet,
+    session = await createSession({ simConfig: level.simConfig, initialState: level.initialState, fog, fogMemory, torchActivation, glyphSet,
       ...(level.costing ? { costing: level.costing } : {}), ...(arriving ? { arrivingCharacter: arriving } : {}) });
     turns = 0;
     say();
@@ -77,7 +78,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
     levelIndex = index;
     arriving = carry && resume.arrivingCharacter ? resume.arrivingCharacter : null;
     try {
-      session = await resumePlaySession({ simConfig: level.simConfig, initialState: level.initialState, save: resume.save, fog, fogMemory, glyphSet,
+      session = await resumePlaySession({ simConfig: level.simConfig, initialState: level.initialState, save: resume.save, fog, fogMemory, torchActivation, glyphSet,
         ...(level.costing ? { costing: level.costing } : {}), ...(arriving ? { arrivingCharacter: arriving } : {}) });
       turns = resume.save.capture.payload.commands.length;
     } catch (error) {
@@ -629,7 +630,7 @@ export async function createGameController({ levels, startIndex = 0, createSessi
   /** Re-run a capture on the current level and continue from where it ended. */
   async function replay(capture) {
     const level = levels[levelIndex];
-    session = await replayPlaySession({ simConfig: level.simConfig, initialState: level.initialState, capturedInput: capture, fog, fogMemory,
+    session = await replayPlaySession({ simConfig: level.simConfig, initialState: level.initialState, capturedInput: capture, fog, fogMemory, torchActivation,
       ...(arriving ? { arrivingCharacter: arriving } : {}) });
     turns = capture.payload.commands.length;
     say();

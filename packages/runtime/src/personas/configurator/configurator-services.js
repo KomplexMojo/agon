@@ -103,6 +103,7 @@ import { characterStateFromActor, seatArrivingCharacter, validateCharacterState 
 import { reportTactics, compileTactics, validateTactics } from "./tactic-report.js";
 import { composeRetinue, fitRetinues, RETINUE_ROLES } from "./retinue.js";
 import { fitTacticHazards, composeFieldHazard } from "./minefield.js";
+import { applyTorchActivation } from "./torch.js";
 import { nameUnnamedHazardAffinities } from "./unnamed-affinity.js";
 import { normalizeMotivationRulesArtifact, resolveMotivationRules } from "./motivation-rules.js";
 /**
@@ -495,6 +496,7 @@ export function attachConfiguratorServices({ fsm } = {}) {
     withLevelObjectives,
     characterStateFromActor,
     seatArrivingCharacter,
+    applyTorchActivation,
     validateCharacterState,
     reportTactics,
     compileTactics,

@@ -353,6 +353,7 @@ export function mapHazards(hazards = [], { affinityRules } = {}) {
       activeAffinityKey: `${kind}:${expression}`,
       motivations: Array.isArray(entry.motivations) ? entry.motivations : [],
       holdings: Array.isArray(entry.holdings) ? entry.holdings : [],
+      ...(entry.fixture !== undefined ? { fixture: entry.fixture } : {}),
     });
     return { ...actor, category: presentation.category };
   });

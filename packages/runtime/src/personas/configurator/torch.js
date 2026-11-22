@@ -114,3 +114,32 @@ export function composeTorches({ layout, room, params, takenIds = new Set(), occ
   });
   return { hazards, placement, row: { applied: true, room: room.id, hazards: ids, ...(notes.length > 0 ? { note: notes.join("; ") } : {}) } };
 }
+
+export const TORCH_ACTIVATION = Object.freeze({ PROXIMITY: "proximity", ROOM_ENTER: "room_enter" });
+const DEFAULT_PROXIMITY_RADIUS = 3;
+
+/**
+ * #906: give every light fixture in `initialState` a dormancy for `mode`, so it stays dark until a
+ * delver nears it (`proximity`, within DEFAULT_PROXIMITY_RADIUS or `radius`) or enters its room
+ * (`room_enter`, the layout room holding it). Core wakes it (`wakeDormantActors`); this only
+ * authors the trigger data. A null or absent mode returns the state unchanged, so a level without
+ * the option keeps today's behaviour. Pure: returns a new initial state.
+ */
+export function applyTorchActivation({ initialState, layout, mode, radius = DEFAULT_PROXIMITY_RADIUS } = {}) {
+  if (mode === undefined || mode === null) return initialState;
+  if (!Object.values(TORCH_ACTIVATION).includes(mode)) {
+    throw new Error(`torchActivation must be one of ${Object.values(TORCH_ACTIVATION).join(", ")}.`);
+  }
+  if (!Number.isSafeInteger(radius) || radius < 1) throw new Error("torchActivation radius must be a whole number >= 1.");
+  const data = layout?.data || layout || {};
+  const rooms = Array.isArray(data.rooms) ? data.rooms : [];
+  const roomOf = ({ x, y }) => rooms.find((room) => x >= room.x && y >= room.y && x < room.x + room.width && y < room.y + room.height);
+  const actors = (Array.isArray(initialState?.actors) ? initialState.actors : []).map((actor) => {
+    if (!actor?.fixture || actor.dormant) return actor;
+    if (mode === TORCH_ACTIVATION.PROXIMITY) return { ...actor, dormant: { mode, radius } };
+    const room = roomOf(actor.position);
+    // A torch outside every room has no room to wait for, so it stays always-on rather than never lighting.
+    return room ? { ...actor, dormant: { mode, area: { x: room.x, y: room.y, width: room.width, height: room.height } } } : actor;
+  });
+  return { ...initialState, actors };
+}

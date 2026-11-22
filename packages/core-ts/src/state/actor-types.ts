@@ -60,6 +60,10 @@ export interface ActorVitalHolding {
 
 export type ActorHolding = ActorAffinityHolding | ActorVitalHolding;
 
+export type ActorDormancy =
+  | { mode: 'proximity'; radius: number }
+  | { mode: 'room_enter'; area: { x: number; y: number; width: number; height: number } };
+
 export interface ActorRecordBase {
   id: string;
   alignment: ActorAlignment;
@@ -109,6 +113,17 @@ export interface ActorRecordBase {
    * stamina and the vital the hit took). Omitted means none paused.
    */
   regenPaused?: Partial<Record<ActorVitalKind, number>>;
+  /**
+   * #906: a light fixture's role (`wall` or `standing`). Authoring data only: it names a torch so a
+   * client option can set its activation; core reads no rule from it.
+   */
+  fixture?: 'wall' | 'standing';
+  /**
+   * #906: the actor is dormant, so none of its lasting affinities is lit (no field, no upkeep) until
+   * its trigger holds, when `wakeDormantActors` deletes this. `proximity`: any living external actor
+   * within `radius` (Chebyshev). `room_enter`: any living external actor inside `area`. Omitted means awake.
+   */
+  dormant?: ActorDormancy;
   /**
    * #519: the actors this one keeps watching, by id, in the order it began. Each pays a mana
    * upkeep a turn; a watch ends when mana cannot pay it or the target is gone. Omitted means none.

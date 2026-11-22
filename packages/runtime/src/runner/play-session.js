@@ -152,6 +152,9 @@ export const COMPANION_MOTIVATION = "friendly";
  * @param {object}   [args.personas]   persona registry override (ablation tests); the real one by default
  * @param {boolean}  [args.fog]        apply fog of war to view(); off by default so a
  *                                     caller opts in when it draws `sight`
+ * @param {"proximity"|"room_enter"} [args.torchActivation] #906: light fixtures (torches) start dormant and light
+ *                                     when a delver comes within 3 tiles (`proximity`) or enters their room
+ *                                     (`room_enter`); omitted keeps today's always-on behaviour.
  * @param {boolean}  [args.fogMemory]  with fog, keep the cells seen before on the board as
  *                                     `REMEMBERED` (default). false (#858): only what is in sight
  *                                     now shows, every other cell is `UNKNOWN`, so fog returns when
@@ -179,6 +182,7 @@ export async function createPlaySession({
   glyphSet = "unicode",
   hibernationRadius,
   arrivingCharacter,
+  torchActivation,
 } = {}) {
   if (!simConfig || !initialState) {
     throw new Error("createPlaySession: simConfig and initialState are required");
@@ -189,6 +193,10 @@ export async function createPlaySession({
   if (arrivingCharacter) {
     initialState = sessionConfigurator.seatArrivingCharacter({ initialState, characterState: arrivingCharacter,
       seatId: playerActorId ?? defaultPlayerActorId(initialState) });
+  }
+  // #906: light fixtures wait dark for a delver (`proximity`) or the room's entry (`room_enter`); omitted keeps them always on.
+  if (torchActivation) {
+    initialState = sessionConfigurator.applyTorchActivation({ initialState, layout: simConfig?.layout, mode: torchActivation });
   }
   const sourceActors = (Array.isArray(initialState.actors) ? initialState.actors : [])
     .filter((actor) => typeof actor?.id === "string" && actor.id);

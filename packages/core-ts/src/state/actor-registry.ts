@@ -3,6 +3,7 @@ import type { ActorCastTrail, ActorSpreadEmber, ActorPosition, ActorRecord, Acto
 
 import { validateActorRecordVitals, changeActorVital, regenerateActor } from './actor-vitals.ts';
 import { chargeActorAffinityUpkeep, recoverActorAffinity } from '../rules/actor-upkeep.ts';
+import { wakeDormantActors } from '../rules/actor-dormancy.ts';
 import { chargeMinionUpkeep, restoreMinionBonds } from '../rules/minion-upkeep.ts';
 
 import { validateActorInventory, equipActorAffinity, unequipActorAffinity } from './actor-inventory.ts';
@@ -17,8 +18,19 @@ export type ActorMoveRejection = 'WrongActor' | 'InvalidCapability' | 'OutOfBoun
 const ACTOR_FIELDS = new Set([
   'id', 'alignment', 'position', 'lifecycle', 'defeatVital', 'vitals',
   'capabilities', 'motivations', 'affinities', 'activeAffinityKey', 'holdings', 'exitDwell', 'escortOf', 'minionOf', 'bondLapsed', 'affinityExhausted',
-  'affinitySlots', 'raisedBy', 'soaked', 'regenPaused', 'watching', 'equippedAffinityKeys', 'exhaustedAffinityKeys', 'equippedAffinityStacks', 'equippedAffinityIntensity',
+  'affinitySlots', 'raisedBy', 'soaked', 'regenPaused', 'fixture', 'dormant', 'watching', 'equippedAffinityKeys', 'exhaustedAffinityKeys', 'equippedAffinityStacks', 'equippedAffinityIntensity',
 ]);
+
+function validDormancy(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const dormancy = value as Record<string, unknown>;
+  const whole = (n: unknown, minimum: number) => Number.isSafeInteger(n) && (n as number) >= minimum;
+  if (dormancy.mode === 'proximity') return Object.keys(dormancy).length === 2 && whole(dormancy.radius, 1);
+  if (dormancy.mode !== 'room_enter' || Object.keys(dormancy).length !== 2) return false;
+  const area = dormancy.area as Record<string, unknown> | undefined;
+  return !!area && typeof area === 'object' && Object.keys(area).length === 4
+    && whole(area.x, 0) && whole(area.y, 0) && whole(area.width, 1) && whole(area.height, 1);
+}
 
 /** Reject values JSON cannot faithfully represent before taking ownership. */
 function assertJson(value: unknown, ancestors = new Set<object>()): void {
@@ -102,6 +114,10 @@ export function createActorRegistry(input: ActorRegistrySnapshot) {
         || !Number.isSafeInteger(turns) || (turns as number) < 1))) {
       throw new Error('invalid regen pause');
     }
+    if (record.fixture !== undefined && record.fixture !== 'wall' && record.fixture !== 'standing') {
+      throw new Error('invalid fixture');
+    }
+    if (record.dormant !== undefined && !validDormancy(record.dormant)) throw new Error('invalid dormancy');
     if (record.watching !== undefined && (!Array.isArray(record.watching) || record.watching.length === 0
       || new Set(record.watching).size !== record.watching.length
       || record.watching.some(id => typeof id !== 'string' || !id || id === record.id))) {
@@ -196,6 +212,10 @@ export function createActorRegistry(input: ActorRegistrySnapshot) {
       const actual = changeActorVital(actor, key, delta);
       if (actor) exposeDefeatHoldings(actor);
       return actual;
+    },
+    /** #906: wake each dormant actor whose trigger holds; returns the ids woken. Call before fields resolve. */
+    wakeDormant(): string[] {
+      return wakeDormantActors(ordered);
     },
     /** Lasting affinities pay their per-turn upkeep; call before regenerate(). */
     chargeAffinityUpkeep(upkeepByStacks: readonly number[]): void {
