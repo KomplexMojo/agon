@@ -6,6 +6,10 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 
 - Releasing is automatic (no API change): merging a PR that bumps the engine `version` publishes `@agon-engine/engine` and tags `v<version>` (`publish-engine.yml`). The manual tag step is gone.
 
+## 0.8.0
+
+### Added
+
 - Hybrid fog memory (#905): `fogMemory` also takes `"structure"` (`FOG_MEMORY.STRUCTURE`, exported on `/client`): out of sight, walls stay `REMEMBERED` with their masks and every other cell returns to `UNKNOWN`. `true` and `false` are unchanged. Additive.
 - Torches (#906): the `torch` tactic (`agon create --tactic "torch;wall=2;standing=1"`, `tactics` on `agon_create`) adds cheap light fixtures priced from the hazard share. `torchActivation` on `createGameController` / `createPlaySession` is `"proximity"` or `"room_enter"`; omitted, torches are always on. Actor records may carry `fixture` and `dormant`. Additive.
 
