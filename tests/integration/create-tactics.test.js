@@ -79,6 +79,22 @@ test("a shrine is a restoring hazard in the level, priced by the Allocator from 
   assert.ok(lines.length > 0 && lines.every((line) => line.status === "approved" && line.category === "hazards"), JSON.stringify(lines));
 });
 
+test("a torch is a cheap light hazard in the level, priced from the hazard share (#906)", async () => {
+  const result = await create({ room: ["size=medium;count=3"], delver: ["count=1;affinity=wind;motivation=exploring"],
+    tactics: ["torch;wall=2;standing=1"], seed: 4 });
+  assert.equal(result.status, 0, result.output);
+  const row = result.summary.placementReport.find((entry) => entry.tactic === "torch");
+  assert.equal(row.applied, true, row.note);
+  assert.equal(row.hazards.length, 3);
+  for (const { id } of row.hazards) {
+    const hazard = result.initialState.actors.find((actor) => actor.id === id);
+    assert.ok(hazard, `${id} is in the level`);
+    assert.ok(hazard.affinities.some((pair) => pair.kind === "light" && pair.expression === "emit"));
+    const lines = result.receipt.lineItems.filter((line) => line.subjectRef?.id === id);
+    assert.ok(lines.length > 0 && lines.every((line) => line.status === "approved" && line.category === "hazards"), JSON.stringify(lines));
+  }
+});
+
 test("the same tactics and seed rebuild the same level", async () => {
   const first = await create({ ...level, tactics: ["ambush"], seed: 11 });
   const second = await create({ ...level, tactics: ["ambush"], seed: 11 });

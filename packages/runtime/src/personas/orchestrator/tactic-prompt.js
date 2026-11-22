@@ -14,6 +14,7 @@ const CATALOGUE_LINES = Object.freeze([
   "- retinue: params size (minions around a warden leader, needs a warden).",
   "- minefield: params hazards (emit hazards in a room on the route), range (each hazard's reach, >= 1).",
   "- shrine: params count (hazards whose field restores a vital, in a room off the route), range (each one's reach, >= 1).",
+  "- torch: params wall, standing (cheap light fixtures in a room), range (>= 1); not part of an auto mix.",
 ]);
 
 /** The prompt asking for a tactic plan for this level. */
