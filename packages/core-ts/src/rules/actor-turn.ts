@@ -279,6 +279,7 @@ export function createActorTurn(
     closeActions(): boolean { if (state.closed) return false; state.closed = true; return true; },
     resolveFields() {
       if (!state.closed || state.fieldsResolved) return null;
+      registry.wakeDormant();
       const before = readVitals(registry);
       const result = resolveActorFields(registry);
       addVitalChanges(state, before, readVitals(registry), 'hit');

@@ -27,7 +27,7 @@ export function affinityUpkeepForStacks(upkeepByStacks: readonly number[], stack
 
 /** The equipped lasting affinities that are switched on, in equip order. */
 export function litActorAffinities(actor: ActorRecord): ActorAffinityEntry[] {
-  if (!actor.capabilities.canCast) return [];
+  if (!actor.capabilities.canCast || actor.dormant) return [];
   const off = exhaustedActorAffinityKeys(actor);
   return equippedActorAffinities(actor)
     .filter(pair => isLastingAffinityExpression(pair.expression) && !off.includes(affinityKey(pair)));

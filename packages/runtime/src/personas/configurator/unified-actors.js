@@ -15,7 +15,7 @@ const PRESETS = Object.freeze({
   barrier: { alignment: 'dungeon', defeatVital: 'durability', canMove: false, blocksMovement: true, affinitySlots: PRESET_AFFINITY_SLOTS.barrier },
 });
 export const INPUT_KEYS = new Set(['category', 'id', 'position', 'alignment', 'lifecycle', 'defeatVital',
-  'vitals', 'capabilities', 'motivations', 'affinities', ...ACTOR_EQUIPMENT_FIELDS, 'holdings']);
+  'vitals', 'capabilities', 'motivations', 'affinities', ...ACTOR_EQUIPMENT_FIELDS, 'holdings', 'fixture', 'dormant']);
 const CATEGORIES = new Set(Object.keys(PRESETS));
 
 function leftoverMotivations(actor) {
@@ -95,6 +95,9 @@ export function normalizeActorDefinition(input) {
   if (slots !== 1) actor.affinitySlots = slots;
   if (Object.hasOwn(request, 'equippedAffinityKeys')) actor.equippedAffinityKeys = request.equippedAffinityKeys;
   if (Object.hasOwn(request, 'equippedAffinityStacks')) actor.equippedAffinityStacks = { ...request.equippedAffinityStacks };
+  // #906: a light fixture's role, and the dormancy a client option may give it.
+  if (Object.hasOwn(request, 'fixture')) actor.fixture = request.fixture;
+  if (Object.hasOwn(request, 'dormant')) actor.dormant = structuredClone(request.dormant);
   validateActorRecordVitals(actor);
   validateActorInventory(actor);
   validateActorHoldings(actor);

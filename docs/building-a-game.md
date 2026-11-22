@@ -83,6 +83,8 @@ one of `TURN_EVENT_KINDS` (on `/vocabulary`):
 
 Fog memory: `fogMemory` on `createGameController` / `createPlaySession` is `true` (every cell seen stays `REMEMBERED`, default), `false` (fog returns when you leave), or `FOG_MEMORY.STRUCTURE` (`"structure"`, #905): walls stay remembered, floor returns to fog.
 
+Light fixtures (#906): a level built with the `torch` tactic holds cheap torches that light for a few turns, go dark and refill. `torchActivation` on `createGameController` / `createPlaySession` is `"proximity"` (a torch lights when a delver comes within 3 tiles) or `"room_enter"` (when a delver enters its room); omit it and torches are always on, as before.
+
 Under fog only what your party saw or took part in is listed. `session.eventsSince(seq)` returns the events after a
 `seq`, and the game controller's `frame().events` holds the last call's. `session.status()` says whether the run is won, lost or still
 going: `outcome` is `playing`, `won` or `lost`, and `objectives` lists the level's objectives (#867), each

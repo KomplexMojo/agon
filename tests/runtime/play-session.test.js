@@ -372,6 +372,25 @@ test("with fogMemory off, light emit is what shows cells beyond adjacency, and o
   assert.equal(session.view().sight[3][3], PLAY_SIGHT.UNKNOWN, "the lamp drained: back to fog, not remembered");
 });
 
+// #906: with torchActivation "proximity" a light fixture is dark until a delver is near, then lights.
+test("torchActivation proximity: a torch is dark until the seat is within reach, and fixtures only", async () => {
+  const torch = { ...trap("torch", "light", { x: 3, y: 3 }, { stacks: 2, mana: 12, regen: 1 }), fixture: "standing" };
+  const level = mazeLevel([torch]);
+  const dormant = await createPlaySession({ ...level, fog: true, fogMemory: false, torchActivation: "proximity" });
+  assert.equal(dormant.view().sight[3][3], PLAY_SIGHT.UNKNOWN, "dormant: no light yet");
+  await dormant.act({ kind: "wait" });
+  assert.equal(dormant.view().sight[3][3], PLAY_SIGHT.VISIBLE, "the seat is within 3: it lit");
+  const always = await createPlaySession({ ...level, fog: true, fogMemory: false });
+  assert.equal(always.view().sight[3][3], PLAY_SIGHT.VISIBLE, "without the option it is always on");
+  const lamp = mazeLevel([trap("lamp", "light", { x: 3, y: 3 }, { stacks: 2, mana: 12, regen: 1 })]);
+  const plain = await createPlaySession({ ...lamp, fog: true, fogMemory: false, torchActivation: "proximity" });
+  assert.equal(plain.view().sight[3][3], PLAY_SIGHT.VISIBLE, "a hazard that is not a fixture is untouched");
+});
+
+test("torchActivation refuses an unknown mode", async () => {
+  await assert.rejects(createPlaySession({ ...mazeLevel([]), torchActivation: "sometimes" }), /torchActivation must be one of/);
+});
+
 test("without fog, every cell is visible", async () => {
   const view = (await newSession()).view();
   assert.ok(view.sight.every((row) => /^v+$/.test(row)));

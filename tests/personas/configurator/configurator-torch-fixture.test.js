@@ -67,3 +67,20 @@ test("the torch tactic rejects an unknown param", async () => {
   const { readTorchParams } = await import("../../../packages/runtime/src/personas/configurator/torch.js");
   assert.throws(() => readTorchParams({ bogus: 1 }), /unknown param/);
 });
+
+test("applyTorchActivation gives fixtures a dormancy and leaves other actors and an absent mode alone", async () => {
+  const { applyTorchActivation } = await import("../../../packages/runtime/src/personas/configurator/torch.js");
+  const layout = { data: { rooms: [{ id: "R1", x: 2, y: 2, width: 5, height: 4 }] } };
+  const initialState = { actors: [
+    { id: "t", position: { x: 3, y: 3 }, fixture: "wall" },
+    { id: "out", position: { x: 9, y: 9 }, fixture: "standing" },
+    { id: "h", position: { x: 4, y: 4 } },
+  ] };
+  assert.equal(applyTorchActivation({ initialState, layout }), initialState, "no mode: unchanged");
+  const room = applyTorchActivation({ initialState, layout, mode: "room_enter" }).actors;
+  assert.deepEqual(room[0].dormant, { mode: "room_enter", area: { x: 2, y: 2, width: 5, height: 4 } });
+  assert.equal(room[1].dormant, undefined, "a torch outside every room stays always on");
+  assert.equal(room[2].dormant, undefined);
+  assert.deepEqual(applyTorchActivation({ initialState, layout, mode: "proximity", radius: 4 }).actors[0].dormant, { mode: "proximity", radius: 4 });
+  assert.throws(() => applyTorchActivation({ initialState, layout, mode: "x" }), /must be one of/);
+});

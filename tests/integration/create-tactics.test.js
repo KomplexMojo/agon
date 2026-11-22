@@ -90,6 +90,7 @@ test("a torch is a cheap light hazard in the level, priced from the hazard share
     const hazard = result.initialState.actors.find((actor) => actor.id === id);
     assert.ok(hazard, `${id} is in the level`);
     assert.ok(hazard.affinities.some((pair) => pair.kind === "light" && pair.expression === "emit"));
+    assert.ok(["wall", "standing"].includes(hazard.fixture), "the fixture role reaches the level");
     const lines = result.receipt.lineItems.filter((line) => line.subjectRef?.id === id);
     assert.ok(lines.length > 0 && lines.every((line) => line.status === "approved" && line.category === "hazards"), JSON.stringify(lines));
   }
