@@ -85,7 +85,7 @@ export function usage() {
   node ${rel} schemas [--out-dir dir]
   node ${rel} solve --scenario "..." [--out-dir dir] [--run-id id] [--plan path] [--intent path] [--options path]
   node ${rel} solve --dir dir --question <place-objects|budget-fit> [--budget-tokens N] [--out-dir dir] [--run-id id]
-  node ${rel} run (--sim-config path --initial-state path | --from-run runId) [--execution-policy path] [--ticks N] [--world-state-checkpoints ticks] [--seed N] [--out-dir dir] [--run-id id] [--actor spec] [--vital spec] [--vital-default spec] [--tile-wall xy] [--tile-barrier xy] [--tile-floor xy] [--actions path] [--affinity-presets path] [--affinity-loadouts path] [--affinity-summary path] [--progress] [--dry-run]
+  node ${rel} run (--sim-config path --initial-state path | --from-run runId) [--execution-policy path] [--ticks N] [--world-state-checkpoints ticks] [--seed N] [--out-dir dir] [--run-id id] [--actor spec] [--vital spec] [--vital-default spec] [--tile-wall xy] [--tile-barrier xy] [--tile-floor xy] [--actions path] [--affinity-presets path] [--affinity-loadouts path] [--affinity-summary path] [--progress] [--preserve-player-control] [--dry-run]
   node ${rel} configurator --level-gen path --actors path [--plan path] [--budget-receipt path] [--budget path --price-list path --receipt-out path] [--affinity-presets path] [--affinity-loadouts path] [--out-dir dir] [--run-id id]
   node ${rel} budget --budget path [--price-list path] [--receipt path] [--out-dir dir] [--out path] [--receipt-out path]
   node ${rel} replay --sim-config path --initial-state path --tick-frames path [--execution-policy path] [--ticks N] [--seed N] [--out-dir dir]
@@ -238,6 +238,7 @@ Options:
   --fixture-load  Fixture JSON-RPC response for blockchain-load
   --run-id        Override run id for output artifacts
   --created-at    Override createdAt timestamp (ISO-8601) for llm-plan/room-plan/hazard-plan/resource-plan/delver-plan/warden-plan
+  --preserve-player-control  run: keep authored user_controlled delvers (default remaps them to computer autonomy for headless runs)
   --dry-run       Validate schema/budget inputs without executing run or writing artifacts
   --dir           play: an \`agon create --out-dir\` or run directory holding sim-config.json + initial-state.json
                   solve --question: the same kind of built level directory

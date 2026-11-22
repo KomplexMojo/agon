@@ -254,7 +254,7 @@ The MCP server stays the same. Only LLM-backed tools such as `agon_llm`, `agon_o
 | agon_resource_plan | Authoring | Build a resource-only authoring plan. | resource[], goal, dungeonAffinity, budgetTokens, budget, priceList |
 | agon_build | Simulation | Build artifacts from a build spec. | spec |
 | agon_solve | Simulation | Pose a scenario to the constraint solver; `solved` says whether it answered. | scenario, plan, intent, options |
-| agon_run | Simulation | Run a simulation from artifacts or from an existing run. | simConfig, initialState, fromRun, executionPolicy, ticks, seed, actor[], vital[], vitalDefault[], tileWall[], tileBarrier[], tileFloor[], actions, affinityPresets, affinityLoadouts, affinitySummary, progress, dryRun |
+| agon_run | Simulation | Run a simulation from artifacts or from an existing run. Delvers authored `user_controlled` are remapped to computer autonomy by default. | simConfig, initialState, fromRun, executionPolicy, ticks, seed, actor[], vital[], vitalDefault[], tileWall[], tileBarrier[], tileFloor[], actions, affinityPresets, affinityLoadouts, affinitySummary, progress, preservePlayerControl, dryRun |
 | agon_configurator | Simulation | Assemble simulation config and initial state inputs. | levelGen, actors, plan, budgetReceipt, budget, priceList, receiptOut, affinityPresets, affinityLoadouts |
 | agon_budget | Simulation | Compute a budget receipt from budget and price list artifacts. | budget, priceList, receipt, receiptOut |
 | agon_replay | Simulation | Replay a run deterministically from recorded tick frames. | simConfig, initialState, tickFrames, executionPolicy, ticks, seed |
@@ -750,6 +750,12 @@ free-text scenario carries no domain, so it comes back `solved: false` with stat
 
 #### `agon_run`
 
+By default, headless runs remap delver `user_controlled` motivations to computer autonomy
+(`goal_oriented` plus an `exploring`/`attacking` goal source when missing). The result may
+include `headlessDelverAutonomy` listing each remapped actor. Set `preservePlayerControl` to
+keep the authored seat; scripted `actions` also skip the remap. Interactive play tools are
+unchanged.
+
 Schema:
 
 | Parameter | Type | Required | Notes |
@@ -766,11 +772,12 @@ Schema:
 | tileWall | string[] | no | Wall tile coordinates |
 | tileBarrier | string[] | no | Barrier tile coordinates |
 | tileFloor | string[] | no | Floor tile overrides |
-| actions | string | no | ActionSequence path |
+| actions | string | no | ActionSequence path (also skips headless delver remap) |
 | affinityPresets | string | no | AffinityPresetArtifact path |
 | affinityLoadouts | string | no | ActorLoadoutArtifact path |
 | affinitySummary | string | no | Output path for affinity summary |
 | progress | boolean | no | Emit tick progress events |
+| preservePlayerControl | boolean | no | Keep authored `user_controlled` delvers |
 | dryRun | boolean | no | Validate without execution |
 | outDir | string | no | Output directory override |
 | runId | string | no | Run id override |

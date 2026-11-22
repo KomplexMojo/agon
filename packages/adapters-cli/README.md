@@ -903,6 +903,15 @@ when the adapter was asked. `agon_solve` takes the same `dir`, `question` and `b
 Execute a configured simulation run using captured artifacts, emitting TickFrame and
 effect logs plus a minimal RunSummary artifact.
 
+**Headless delver autonomy (default).** Delvers authored with `user_controlled` have no
+player seat in a headless `agon run` / MCP `agon_run`, so by default the command strips
+`user_controlled` and ensures an autonomous stack (`goal_oriented` plus `exploring` or
+`attacking` when a goal source is missing). The remapped motivations are written to
+`resolved-initial-state.json` when anything changed, and the run stdout/MCP result lists
+them under `headlessDelverAutonomy`. Opt out with `--preserve-player-control` (MCP:
+`preservePlayerControl: true`). Scripted `--actions` runs also skip the remap. Interactive
+`agon play` / `play-session` are unchanged.
+
 When the run's inputs come from an authored `create` outDir (identified by the sibling
 pre-run `bundle.json` next to `--sim-config`), `run` also stitches a post-run
 `agon/GameplayBundle` from the resolved artifacts and recorded tick frames. It

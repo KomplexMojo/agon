@@ -7,7 +7,7 @@ import { buildManualMoveAction } from "../manual-movement.js";
 import { createAllocatorPersona } from "../../personas/allocator/persona.js";
 import { createConfiguratorPersona } from "../../personas/configurator/persona.js";
 import { createRuntime } from "../../runner/runtime.js";
-import { applyActorOverrides, applyTileOverrides, barrierSpecsFromTileOverrides, baseVitalsFromActors, createDeterministicClock, summarizeRuntimeDecisionCaptures, normalizeArgList, resolveClockSeed, resolveVitalDefaults } from "../run-helpers.js";
+import { applyActorOverrides, applyHeadlessDelverAutonomy, applyTileOverrides, barrierSpecsFromTileOverrides, baseVitalsFromActors, createDeterministicClock, summarizeRuntimeDecisionCaptures, normalizeArgList, resolveClockSeed, resolveVitalDefaults } from "../run-helpers.js";
 // M9: the SCHEMAS alias table below, and the two ActionSequence sites M8 relocated, all
 // read from contracts/artifacts.ts. The table stays — short keys are what this file's call
 // sites use — but its VALUES have one origin now instead of eighteen.
@@ -130,6 +130,17 @@ export function createRunCommands(ctx) {
       vitalDefaults,
     });
     const overridesApplied = tileOverrideResult.mutated || actorOverrideResult.mutated;
+    // Headless default: delvers authored `user_controlled` get computer autonomy so the run
+    // plays without a seated player. Opt out with --preserve-player-control; skipped when
+    // --actions already scripts turns. Interactive play / play-session are unchanged.
+    const headlessAutonomy = applyHeadlessDelverAutonomy(initialState, {
+      preservePlayerControl: args["preserve-player-control"] === true,
+      hasActions: Boolean(actionsPath),
+    });
+    if (headlessAutonomy.applied) {
+      const ids = headlessAutonomy.remapped.map((entry) => entry.actorId).join(", ");
+      commandLog(`run: headless delver autonomy for ${ids}`);
+    }
     // #278: an overridden level is priced again by the Allocator, against the budget of the
     // receipt `agon create` wrote beside it. The run plays as overridden either way.
     let overridePricing = null;
@@ -304,9 +315,11 @@ export function createRunCommands(ctx) {
     if (affinitySummary && affinitySummaryPath) {
       await writeJson(affinitySummaryPath, affinitySummary);
     }
+    if (overridesApplied || headlessAutonomy.applied) {
+      await writeJson(join(outDir, "resolved-initial-state.json"), initialState);
+    }
     if (overridesApplied) {
       await writeJson(join(outDir, "resolved-sim-config.json"), simConfig);
-      await writeJson(join(outDir, "resolved-initial-state.json"), initialState);
       await writeJson(join(outDir, "price-list.json"), overridePricing.priceList);
       await writeJson(join(outDir, "budget-receipt.json"), overridePricing.receipt);
     }
@@ -320,7 +333,12 @@ export function createRunCommands(ctx) {
     }
 
     commandLog(`run: wrote ${outDir}`);
-    return { outDir, runtimeBudgetReceipt, ...(overridePricing ? { pricingReport: overridePricing.report } : {}) };
+    return {
+      outDir,
+      runtimeBudgetReceipt,
+      ...(overridePricing ? { pricingReport: overridePricing.report } : {}),
+      ...(headlessAutonomy.applied ? { headlessDelverAutonomy: headlessAutonomy.remapped } : {}),
+    };
   }
   async function manualMove(args = {}) {
     return buildManualMoveAction({
