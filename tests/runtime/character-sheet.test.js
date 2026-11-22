@@ -269,3 +269,34 @@ test("a recipe loads into the sheet, prices as the recipe, and writes a spec ago
   assert.equal(sheet.view().total, 234, "reset returns to the starting character");
   assert.throws(() => sheet.loadRecipe("necromancer"), /unknown recipe "necromancer"/);
 });
+
+// #907: a blank sheet starts with a pocket lantern (light:emit 1x1) equipped; anything written is kept.
+test("a blank sheet starts with a lantern equipped, and the spec says so", async () => {
+  const { createCharacterSheet } = await load();
+  const sheet = createCharacterSheet({ budgetTokens: 1000 });
+  assert.match(sheet.spec(), /affinities=light:emit:1(;|,)/);
+  assert.match(sheet.spec(), /equip=light:emit;/);
+  assert.equal(sheet.view().ok, true);
+});
+
+test("the lantern can be unequipped, and a reopened spec stays dark", async () => {
+  const { createCharacterSheet } = await load();
+  const sheet = createCharacterSheet({ budgetTokens: 1000 });
+  const before = sheet.view().total;
+  sheet.choose(0, "kind", "none");
+  assert.ok(sheet.view().total < before, "the lantern was priced");
+  assert.doesNotMatch(sheet.spec(), /affinities=/);
+  const reopened = createCharacterSheet({ spec: sheet.spec(), budgetTokens: 1000 });
+  assert.doesNotMatch(reopened.spec(), /affinities=/, "a written spec opens as written");
+});
+
+test("lantern: false starts a blank sheet dark", async () => {
+  const { createCharacterSheet } = await load();
+  assert.doesNotMatch(createCharacterSheet({ budgetTokens: 1000, lantern: false }).spec(), /affinities=/);
+});
+
+test("a delver spec that is written is never given a lantern", async () => {
+  const { createCharacterSheet } = await load();
+  const sheet = createCharacterSheet({ spec: "count=1;id=hero;motivation=user_controlled;vitals=health:10:1,mana:10:1,stamina:5:1,durability:10:1", budgetTokens: 1000 });
+  assert.doesNotMatch(sheet.spec(), /light/);
+});

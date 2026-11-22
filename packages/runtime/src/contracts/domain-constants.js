@@ -90,6 +90,14 @@ export const ROOM_AFFINITY_EMIT_PERCENT_PER_STACK = 10;
 export const DELVER_SETUP_MODES = Object.freeze(["auto", "user", "hybrid"]);
 export const DEFAULT_DELVER_SETUP_MODE = DELVER_SETUP_MODES[0];
 
+/**
+ * #907: the pocket lantern a blank character sheet starts with, equipped in slot 1: `light:emit`
+ * range 1, intensity 1. A soft default for the player's delver only; it is never added to wardens,
+ * hazards, resources, barriers or a delver a spec already writes, and the sheet may unequip it
+ * (dark and stealth builds stay legal). One extra tile of personal sight at a small upkeep.
+ */
+export const DEFAULT_DELVER_LANTERN = Object.freeze({ kind: "light", expression: "emit", range: 1, intensity: 1 });
+
 // ── Motivation vocabulary (P5.1 D1: promoted out of personas/) ──────────────
 // These are the runtime-facing names for the game-vocabulary motivation registry,
 // exactly as AFFINITY_KINDS is for GAME_AFFINITY_KINDS above.
