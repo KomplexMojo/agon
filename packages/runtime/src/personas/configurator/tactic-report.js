@@ -33,6 +33,7 @@ import { hiddenRoomCells } from "./doorway-sight.js";
 import { composeRetinue, readRetinueParams } from "./retinue.js";
 import { composeMinefield, pickMinefieldRoom, readMinefieldParams } from "./minefield.js";
 import { composeShrines, pickShrineRoom, readShrineParams } from "./shrine.js";
+import { composeTorches, readTorchParams } from "./torch.js";
 import { leftoverCategory } from "./unified-actors.js";
 
 const NOT_APPLIED_NOTE = "recorded but not applied: the Configurator does not compile this tactic yet";
@@ -82,7 +83,7 @@ function readAmbushParams(params = {}) {
 }
 
 const PARAM_READERS = Object.freeze({ ambush: readAmbushParams, retinue: readRetinueParams, minefield: readMinefieldParams,
-  shrine: readShrineParams });
+  shrine: readShrineParams, torch: readTorchParams });
 
 /**
  * #402 — check a tactic list before the build, for a plan the Configurator didn't author (the
@@ -173,6 +174,18 @@ export function compileTactics({ tactics = [], layout, actors = [], resources = 
       compiled.push(...(minefield.placement || []));
       (minefield.placement || []).forEach((constraint) => constraint.near.target.cells.forEach(({ x, y }) => hazardCells.add(`${x},${y}`)));
       return { tactic: "minefield", ...withParams(entry), ...(minefield.row.applied ? {} : { room: room.id }), ...minefield.row };
+    }
+    if (entry?.tactic === "torch") {
+      // #906: wall and standing light fixtures in a room (`room=`, else picked from the seed).
+      const params = readTorchParams(entry.params || {});
+      const room = params.room ? rooms.find((candidate) => candidate.id === params.room) : pickRoom(rooms, data, seed, index);
+      if (params.room && !room) throw new Error(`tactic torch: no room "${params.room}" in this level.`);
+      if (!room) return { tactic: "torch", ...withParams(entry), applied: false, note: "this level has no room for a torch" };
+      const torch = composeTorches({ layout, room, params, takenIds: hazardIds, occupied: hazardCells });
+      addedHazards.push(...(torch.hazards || []));
+      compiled.push(...(torch.placement || []));
+      (torch.placement || []).forEach((constraint) => constraint.near.target.cells.forEach(({ x, y }) => hazardCells.add(`${x},${y}`)));
+      return { tactic: "torch", ...withParams(entry), ...(torch.row.applied ? {} : { room: room.id }), ...torch.row };
     }
     if (entry?.tactic === "shrine") {
       const params = readShrineParams(entry.params);

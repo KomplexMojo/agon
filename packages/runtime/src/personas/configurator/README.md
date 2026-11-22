@@ -600,6 +600,12 @@ lists `shrines: [{ id, kind, restores, name }]`; `name` is `healing well` when t
 `primaryVital` is health, else `shrine`. The hazard share prices them, and `fitTacticHazards` drops
 shrines and minefield hazards alike from the end of the last such tactic.
 
+`torch` (#906, `torch.js`): cheap light fixtures, `wall=<n>` (2) on a room's edge cells and `standing=<n>` (1) on its
+interior cells, `range=<n>` (1), `room=` (else seeded). A torch is a light emit hazard with a small mana pool and regen below
+its own upkeep, so it lights for a couple of turns, goes dark, and refills (#412). Hazards are never raised to the actor
+viability floor, so no exemption is needed; the Allocator prices it through the hazard path at far less than a
+`composeFieldHazard` hazard. `fitTacticHazards` drops torches the hazard share cannot afford. Not in the Director's auto plan.
+
 ### Configuration recipes (#713, tracker #726)
 
 `recipes.js` reads `recipes/configuration-recipes.json`, the one catalogue of named actor
