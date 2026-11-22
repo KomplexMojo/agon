@@ -1,19 +1,19 @@
 {
   "schemaVersion": "agon-benchmark-result/v2",
   "run": {
-    "id": "2026-11-22T01-52-57-188Z-e37d8f408757-4e5d9498763b",
-    "key": "4e5d9498763bd3e65da03b73f8c49d1f51f55aa67f74e1e16cd1e80903ceb7c0",
+    "id": "2026-11-22T11-11-18-923Z-3713788f0ce5-d51edfcfd1a5",
+    "key": "d51edfcfd1a55648b9c2477c72bd0f7b328275198ece76fa97483f814f864855",
     "status": "completed",
-    "startedAt": "2026-11-22T01:52:57.188Z",
-    "completedAt": "2026-11-22T10:33:05.588Z",
-    "durationMs": 31208400,
+    "startedAt": "2026-11-22T11:11:18.923Z",
+    "completedAt": "2026-11-22T11:15:35.492Z",
+    "durationMs": 256569,
     "runnerContractVersion": "benchmark-agent-v3"
   },
   "source": {
     "repository": "agon",
     "ref": "main",
-    "commit": "e37d8f408757d205738f1b22b29a83b837d8367f",
-    "tree": "bb3622916b5575744afa3647cfb8861687c80823"
+    "commit": "3713788f0ce5c389cd22b536521be1444f4ee824",
+    "tree": "cb0b18fe7db8d30a1e78982e24b7cabb4d255e08"
   },
   "harness": {
     "repository": "agon-ops",
@@ -28,14 +28,36 @@
     "label": null
   },
   "trigger": {
-    "previousEvaluatedCommit": null,
+    "previousEvaluatedCommit": "e37d8f408757d205738f1b22b29a83b837d8367f",
     "reasons": [
-      "initial_evaluation"
+      "relevant_source"
     ],
-    "relevantPaths": [],
-    "pathClasses": [],
+    "relevantPaths": [
+      "packages/core-ts/src/rules/actor-dormancy.ts",
+      "packages/core-ts/src/rules/actor-turn.ts",
+      "packages/core-ts/src/rules/actor-upkeep.ts",
+      "packages/core-ts/src/state/actor-registry.ts",
+      "packages/core-ts/src/state/actor-types.ts",
+      "packages/runtime/src/contracts/domain-constants.js",
+      "packages/runtime/src/contracts/engine-version.js",
+      "packages/runtime/src/controls/game-controller.js",
+      "packages/runtime/src/personas/configurator/README.md",
+      "packages/runtime/src/personas/configurator/configurator-services.js",
+      "packages/runtime/src/personas/configurator/controller.js",
+      "packages/runtime/src/personas/configurator/input-preparation.js",
+      "packages/runtime/src/personas/configurator/tactic-report.js",
+      "packages/runtime/src/personas/configurator/torch.js",
+      "packages/runtime/src/personas/configurator/unified-actors.js",
+      "packages/runtime/src/personas/director/tactics.js",
+      "packages/runtime/src/personas/orchestrator/tactic-prompt.js",
+      "packages/runtime/src/runner/character-sheet.js",
+      "packages/runtime/src/runner/play-session.js"
+    ],
+    "pathClasses": [
+      "runtimeExecution"
+    ],
     "modes": {
-      "authoring": true,
+      "authoring": false,
       "runtimeExecution": true,
       "generatedExecution": true
     },
@@ -5727,7 +5749,7 @@
     }
   },
   "artifacts": {
-    "retentionId": "runs/4e5d9498763bd3e65da03b73f8c49d1f51f55aa67f74e1e16cd1e80903ceb7c0"
+    "retentionId": "runs/d51edfcfd1a55648b9c2477c72bd0f7b328275198ece76fa97483f814f864855"
   },
   "qualifies": false
 }
