@@ -6,6 +6,12 @@ The engine API contract and stability policy are in `docs/engine-api.md`. Entrie
 
 - Releasing is automatic (no API change): merging a PR that bumps the engine `version` publishes `@agon-engine/engine` and tags `v<version>` (`publish-engine.yml`). The manual tag step is gone.
 
+## 0.9.1
+
+### Added
+
+- Torch mount on the client model (#915): `fixture` (`"wall"` or `"standing"`) on `view().hazards` entries and on `buildBoardDrawModel(view).entities` for a light fixture, so a client paints a sconce or a brazier without guessing from neighbouring walls. Absent on anything that is not a fixture. Additive.
+
 ## 0.9.0
 
 ### Changed

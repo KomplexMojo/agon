@@ -35,7 +35,7 @@ const spriteOf = (entity) => normalizeEntitySpriteState(entity, { role: entity.r
  *   `cells[y][x]` is `{ tile, sight }` (`tile` is "fog" where the cell was never seen; floor, spawn and
  *   exit cells also carry `floorVariant`, 0..FLOOR_VARIANT_COUNT-1, #854, and `decor`, null or
  *   0..FLOOR_DECOR_COUNT-1, #884); `entities` are
- *   `{ id, x, y, sprite: { role, affinity }, facing?, moved? }` for everything the view shows standing in sight;
+ *   `{ id, x, y, sprite: { role, affinity }, facing?, moved?, fixture? }` for everything the view shows standing in sight;
  *   `facing` ("north" | "east" | "south" | "west", `FACINGS`) and `moved` come from the view's player and actors.
  */
 export function buildBoardDrawModel(view) {
@@ -66,7 +66,9 @@ export function buildBoardDrawModel(view) {
   const entities = seen.filter((entity) => entity?.position)
     .map((entity) => ({ id: entity.id, x: entity.position.x, y: entity.position.y, sprite: spriteOf(entity),
       // #898: which way a player or actor last stepped, and whether it stepped this turn (a client picks Walk or Idle).
-      ...(entity.facing ? { facing: entity.facing, moved: Boolean(entity.moved) } : {}) }));
+      ...(entity.facing ? { facing: entity.facing, moved: Boolean(entity.moved) } : {}),
+      // #915: a torch's mount, "wall" or "standing", copied from the view so a client does not derive it.
+      ...(entity.fixture ? { fixture: entity.fixture } : {}) }));
   return {
     width: cells[0]?.length ?? 0,
     height: cells.length,

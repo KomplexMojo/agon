@@ -1235,6 +1235,8 @@ export function toViewActor(actor, presentation, labels, revealLevel, upkeepTabl
     ...(offForGood ? { affinityUnpayable: { upkeep: Math.max(...unpayable.map((entry) => entry.upkeep)), maxMana: actor.vitals.mana?.max ?? 0 } } : {}),
     // Soaked (#420): turns left during which each move costs more stamina; plain to see.
     ...(actor.soaked ? { soaked: actor.soaked } : {}),
+    // Light fixture mount (#915): "wall" | "standing", so a client paints a sconce or a brazier without guessing from walls.
+    ...(actor.fixture === "wall" || actor.fixture === "standing" ? { fixture: actor.fixture } : {}),
   };
   if (revealLevel === 0) return { ...shown, revealed: 0 };
   const capped = (value) => (revealLevel === undefined ? value : revealedValue(value, revealLevel));
