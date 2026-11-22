@@ -387,6 +387,23 @@ test("torchActivation proximity: a torch is dark until the seat is within reach,
   assert.equal(plain.view().sight[3][3], PLAY_SIGHT.VISIBLE, "a hazard that is not a fixture is untouched");
 });
 
+// #915: a light fixture's mount reaches the view and the draw model; a plain hazard carries none.
+test("a torch's fixture (wall or standing) is on the view hazard and the draw-model entity", async () => {
+  const { buildBoardDrawModel } = await import("../../packages/runtime/src/render/board-draw-model.js");
+  const wall = { ...trap("sconce", "light", { x: 3, y: 3 }, { stacks: 2, mana: 12, regen: 1 }), fixture: "wall" };
+  const standing = { ...trap("brazier", "light", { x: 3, y: 2 }, { stacks: 2, mana: 12, regen: 1 }), fixture: "standing" };
+  const lamp = trap("lamp", "light", { x: 1, y: 3 }, { stacks: 2, mana: 12, regen: 1 });
+  const view = (await createPlaySession(mazeLevel([wall, standing, lamp]))).view();
+  const byId = (id) => view.hazards.find((hazard) => hazard.id === id);
+  assert.equal(byId("sconce").fixture, "wall");
+  assert.equal(byId("brazier").fixture, "standing");
+  assert.equal("fixture" in byId("lamp"), false, "a hazard that is not a fixture has no mount");
+  const entities = buildBoardDrawModel(view).entities;
+  assert.equal(entities.find((entity) => entity.id === "sconce").fixture, "wall");
+  assert.equal(entities.find((entity) => entity.id === "brazier").fixture, "standing");
+  assert.equal("fixture" in entities.find((entity) => entity.id === "lamp"), false);
+});
+
 test("torchActivation refuses an unknown mode", async () => {
   await assert.rejects(createPlaySession({ ...mazeLevel([]), torchActivation: "sometimes" }), /torchActivation must be one of/);
 });
