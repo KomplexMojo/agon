@@ -511,7 +511,7 @@ Inputs/outputs:
     --warden "count=3;affinity=earth;motivation=stationary" \
     --place "hazard:trap1;near=exit:1" --place "warden:*;near=hazard:trap1:2;count=2"
   ```
-- `--tactic` (repeatable, `tactics` on `agon_create`) asks for a placement tactic: `<ambush|retinue|minefield|shrine>[;key=value...]`.
+- `--tactic` (repeatable, `tactics` on `agon_create`) asks for a placement tactic: `<ambush|retinue|minefield|shrine|torch>[;key=value...]`.
   The Director reads it and refuses an unknown tactic, naming the known ones; the list rides in the plan
   (`directives.tactics`) and the BuildSpec (`plan.hints.tactics`), and the result echoes it as `tactics`. Each tactic
   gets a row in `placementReport`. `ambush[;guards=<n>][;resources=<n>][;room=<id>][;visible=true]` (#398) puts that
@@ -539,6 +539,8 @@ Inputs/outputs:
   `kinds=` must name restoring kinds. A shrine that restores health is reported as a healing well. Like a minefield it
   needs no `--hazard`: the Allocator prices it from the hazard share, and one the share can't afford is dropped. The row
   has `room`, `hazards: [{ id, kind }]`, `shrines: [{ id, kind, restores, name }]`, `note`.
+  `torch` (#906) seats cheap light fixtures in a room: `wall=<n>` (2) against its walls, `standing=<n>` (1) inside it,
+  `range=<n>` (1), `room=<id>`. Each is a small light emit hazard that dims when its mana runs out and refills; priced from the hazard share. Not in `auto`.
   `--tactic auto` (alone; #401) lets the Director pick the mix from the build seed: a minefield and a shrine (#531) always
   fit, a retinue needs a warden, an ambush a warden and a resource, each with a seeded size (a shrine's `count` is 1 or 2). The result's `tactics` lists the picks.
   `--tactic llm` (alone; #402) asks a model for the mix instead (`--fixture` replays a recorded reply; live needs

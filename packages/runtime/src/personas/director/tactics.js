@@ -12,7 +12,7 @@
  */
 import { validateTacticList } from "../../contracts/build-spec.js";
 
-export const PLAN_TACTIC_IDS = Object.freeze(["ambush", "retinue", "minefield", "shrine"]);
+export const PLAN_TACTIC_IDS = Object.freeze(["ambush", "retinue", "minefield", "shrine", "torch"]);
 
 // #401: `--tactic auto` asks the Director for a seeded mix instead of an authored list.
 export const AUTO_TACTIC = "auto";
@@ -20,7 +20,7 @@ export const AUTO_TACTIC = "auto";
 // #418: the budget pools a tactic spends from because it adds things of its own (a minefield
 // adds hazards, and so does a shrine, #486). A tactic that only seats the level's own things
 // spends from no new pool.
-const TACTIC_BUDGET_POOLS = Object.freeze({ minefield: Object.freeze(["hazards"]), shrine: Object.freeze(["hazards"]) });
+const TACTIC_BUDGET_POOLS = Object.freeze({ minefield: Object.freeze(["hazards"]), shrine: Object.freeze(["hazards"]), torch: Object.freeze(["hazards"]) });
 
 /** The budget pools the tactics add things to, in first-asked order, each once. */
 export function tacticBudgetPools(tactics) {

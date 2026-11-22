@@ -23,8 +23,8 @@ test("a tactic spec reads as { tactic, params }, numbers kept as numbers", async
 test("an unknown tactic, an empty one or a bad param is refused with a reason", async () => {
   const { createDirectorPersona, PLAN_TACTIC_IDS } = await load();
   const director = createDirectorPersona({ clock: () => CREATED_AT });
-  assert.deepEqual([...PLAN_TACTIC_IDS], ["ambush", "retinue", "minefield", "shrine"]);
-  assert.throws(() => director.parseTactic("flank"), /unknown tactic "flank".*ambush, retinue, minefield, shrine/);
+  assert.deepEqual([...PLAN_TACTIC_IDS], ["ambush", "retinue", "minefield", "shrine", "torch"]);
+  assert.throws(() => director.parseTactic("flank"), /unknown tactic "flank".*ambush, retinue, minefield, shrine, torch/);
   assert.throws(() => director.parseTactic(""), /tactic/);
   assert.throws(() => director.parseTactic("ambush;guards"), /guards.*key=value/);
   assert.throws(() => director.normalizeTactics([{ tactic: "ambush", params: { guards: [2] } }]), /guards/);
@@ -93,7 +93,7 @@ test("pickSeededTactics: same seed, same plan; picks fit the level's wardens and
     // An ordinary tactic list: it normalizes to itself, in catalogue order.
     assert.deepEqual(director.normalizeTactics(plan), plan);
     const ids = plan.map((entry) => entry.tactic);
-    assert.deepEqual(ids, ["ambush", "retinue", "minefield", "shrine"].filter((id) => ids.includes(id)));
+    assert.deepEqual(ids, ["ambush", "retinue", "minefield", "shrine", "torch"].filter((id) => ids.includes(id)));
     const shrine = plan.find((entry) => entry.tactic === "shrine");
     if (shrine) assert.ok([1, 2].includes(shrine.params.count), JSON.stringify(shrine));
   }
