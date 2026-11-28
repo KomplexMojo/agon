@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "agon-benchmark-heartbeat/v1",
+  "publishedAt": "2026-11-28T14:15:02.396Z",
+  "status": "idle",
+  "dryRun": false,
+  "source": {
+    "commit": "53f085160e4eb0ee94f5560191c24907653614c6",
+    "ref": "main"
+  },
+  "runKey": null,
+  "triggerReasons": [],
+  "identity": {
+    "scenarioSetHash": "c32fb5db97e3dd6c3a141dad01bde4fdef8a04efc7cad9481024091ef528d1d6",
+    "matrixHash": "3def36d7d6cd0fca73a357bf1080887c3e191505814167fc60fbe211b05efc4e",
+    "executionSuiteHash": "b7e1bba3829601d81615bdbe30222e00c6e0aee40d8694ede8626a2ff1dcad8b"
+  },
+  "lastPublishedRunId": "2026-11-22T16-57-33-526Z-53f085160e4e-64d534d37611",
+  "agent": {
+    "installedCommit": "3e8d852c07d74ee7b311f91c008db66258c5524b",
+    "installedAt": "2026-11-16T04:21:21Z"
+  },
+  "progress": null,
+  "error": null
+}
